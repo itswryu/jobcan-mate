@@ -1,0 +1,25 @@
+{
+  "name": "jobcan-auto",
+  "version": "1.0.0",
+  "description": "Automates Jobcan clock-in and clock-out.",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "checkin": "node src/main.js checkIn",
+    "checkout": "node src/main.js checkOut",
+    "schedule": "node src/scheduler.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "jobcan",
+    "automation",
+    "playwright"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "node-cron": "^4.0.7",
+    "playwright": "^1.52.0"
+  }
+}

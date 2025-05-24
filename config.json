@@ -1,0 +1,31 @@
+{
+  "jobcan": {
+    "loginUrl": "https://id.jobcan.jp/users/sign_in?app_key=atd",
+    "attendanceUrl": "https://ssl.jobcan.jp/employee",
+    "loginCredentials": {
+      "envFilePath": ".env",
+      "emailXPath": "//*[@id='user_email']",
+      "passwordXPath": "//*[@id='user_password']",
+      "loginButtonXPath": "//*[@id='login_button']"
+    },
+    "attendanceButtonXPath": "//*[@id='adit-button-push']",
+    "workingStatusXPath": "//*[@id='working_status']"
+  },
+  "workHours": {
+    "weekdaysOnly": true,
+    "checkInTime": "08:00",
+    "checkOutTime": "17:00"
+  },
+  "scheduler": {
+    "enabled": true,
+    "checkInCron": "0 8 * * 1-5",
+    "checkOutCron": "0 17 * * 1-5",
+    "timezone": "Asia/Seoul"
+  },
+  "playwright": {
+    "headless": true
+  },
+  "appSettings": {
+    "testMode": true
+  }
+}

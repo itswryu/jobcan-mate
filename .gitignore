@@ -1,0 +1,16 @@
+.env
+node_modules/
+dist/
+
+# Log files
+*.log
+logs/
+
+# npm/yarn error logs
+npm-debug.log*
+yarn-error.log*
+yarn-debug.log*
+
+# IDE specific files
+.vscode/
+.idea/
