@@ -1,45 +1,62 @@
 const cron = require('node-cron');
 const { exec } = require('child_process');
 const path = require('path');
-// getConfig은 notificationService를 초기화하므로, sendNotification을 여기서 바로 사용할 수 있습니다.
-const { getConfig } = require('./jobcan');
+// getConfig also initializes notificationService, so sendNotification can be used directly here.
+// getMessage is now also exported from jobcan.js
+const { getConfig, getMessage } = require('./jobcan');
 const { isTodayHoliday } = require('./calendarService');
-const { sendNotification, initializeNotificationService } = require('./notificationService'); // sendNotification 추가
+const { sendNotification } = require('./notificationService'); // sendNotification is already initialized by getConfig
 
 const mainScriptPath = path.join(__dirname, 'main.js');
 
-// 스케줄러 시작 시점에 config를 로드하고 notificationService를 초기화합니다.
-// 이렇게 하면 runJob이나 cron 작업 콜백에서 별도로 getConfig을 호출할 필요가 줄어듭니다.
+// appConfig will be loaded when the scheduler starts.
+// This reduces the need to call getConfig separately in runJob or cron job callbacks.
 let appConfig = null;
 
 async function runJob(action) {
+  // Ensure appConfig is loaded, though it should be by startScheduler
+  if (!appConfig) {
+    console.warn('[Scheduler] appConfig not loaded in runJob. Attempting to load now.');
+    try {
+      appConfig = await getConfig();
+    } catch (e) {
+      console.error('[Scheduler] Failed to load config in runJob:', e.message);
+      // Cannot send localized message if config (and thus lang) is unavailable
+      await sendNotification(`[CRITICAL] Scheduler: Failed to load config in runJob: ${e.message}`, true);
+      return;
+    }
+  }
+  const lang = appConfig.telegram.messageLanguage;
+
   console.log(`[${new Date().toISOString()}] Running ${action} job...`);
-  exec(`node ${mainScriptPath} ${action}`, async (error, stdout, stderr) => { // async 추가
+  exec(`node ${mainScriptPath} ${action}`, async (error, stdout, stderr) => {
     if (error) {
-      const errorMessage = `스케줄된 ${action} 작업 실행 중 오류 발생: ${error.message}`;
+      const errorMessage = `Error executing scheduled ${action} job: ${error.message}`;
       console.error(`[${new Date().toISOString()}] ${errorMessage}`);
-      await sendNotification(`[오류] ${errorMessage}`, true);
+      // Use getMessage for notification
+      await sendNotification(getMessage(lang, 'schedulerExecError', { action, errorMsg: error.message }), true);
       return;
     }
     if (stderr) {
-      const stderrMessage = `스케줄된 ${action} 작업 실행 중 표준 오류 발생: ${stderr}`;
-      console.error(`[${new Date().toISOString()}] ${stderrMessage}`);
-      // stderr은 오류일 수도 있고, 단순 경고나 정보성 메시지일 수도 있으므로, 필요에 따라 알림 처리
-      await sendNotification(`[경고] ${stderrMessage}`, true);
+      const stderrMessage = `Stderr during scheduled ${action} job: ${stderr}`;
+      console.warn(`[${new Date().toISOString()}] ${stderrMessage}`); // Changed to warn as stderr is not always a critical error
+      // Notify for stderr, as it might indicate issues.
+      await sendNotification(getMessage(lang, 'schedulerExecStdErr', { action, stderrMsg: stderr }), true);
     }
     console.log(`[${new Date().toISOString()}] Stdout for ${action} job:`, stdout);
     console.log(`[${new Date().toISOString()}] ${action} job finished.`);
-    // 성공 알림은 main.js 내부의 checkIn/checkOut에서 이미 처리되므로 여기서는 중복 알림 X
+    // Success notifications are handled within checkIn/checkOut in main.js, so no duplicate notification here.
   });
 }
 
 async function startScheduler() {
   try {
     appConfig = await getConfig(); // Load config and initialize notificationService via getConfig
+    const lang = appConfig.telegram.messageLanguage;
 
     const { scheduler, workHours, calendar } = appConfig;
 
-    if (!scheduler?.enabled) { // 옵셔널 체이닝 적용
+    if (!scheduler?.enabled) {
       console.log('Scheduler is disabled in config.json.');
       return;
     }
@@ -47,76 +64,78 @@ async function startScheduler() {
     const { checkInCron, checkOutCron, timezone } = scheduler;
 
     if (!cron.validate(checkInCron)) {
-      const message = `잘못된 출근 크론 표현식: ${checkInCron}`;
+      const message = `Invalid cron expression for check-in: ${checkInCron}`;
       console.error(message);
-      await sendNotification(`[오류] ${message}`, true);
+      await sendNotification(getMessage(lang, 'schedulerInvalidCron', { cronExpr: checkInCron, type: 'check-in' }), true);
       return;
     }
     if (!cron.validate(checkOutCron)) {
-      const message = `잘못된 퇴근 크론 표현식: ${checkOutCron}`;
+      const message = `Invalid cron expression for check-out: ${checkOutCron}`;
       console.error(message);
-      await sendNotification(`[오류] ${message}`, true);
+      await sendNotification(getMessage(lang, 'schedulerInvalidCron', { cronExpr: checkOutCron, type: 'check-out' }), true);
       return;
     }
 
-    const schedulerInitMessage = `스케줄러가 시작되었습니다. 타임존: ${timezone || '시스템 기본값'}`;
+    const schedulerInitMessage = `Scheduler started. Timezone: ${timezone || 'System Default'}`;
     console.log(schedulerInitMessage);
-    // 스케줄러 시작 알림은 로그로 충분하다고 판단하여 제거
+    // Notification for scheduler start is deemed sufficient by log.
 
     cron.schedule(checkInCron, async () => {
       const today = new Date();
       const dateString = today.toISOString();
-      console.log(`[${dateString}] 출근 작업 실행 예정 (스케줄: ${checkInCron})`);
+      console.log(`[${dateString}] Scheduled check-in: ${checkInCron}`);
 
-      if (workHours?.weekdaysOnly && (today.getDay() === 0 || today.getDay() === 6)) { // 옵셔널 체이닝 적용
-        const message = `오늘은 주말입니다. 출근 작업을 건너<0xEB><0><0x8E>니다.`;
+      if (workHours?.weekdaysOnly && (today.getDay() === 0 || today.getDay() === 6)) {
+        const message = 'Today is a weekend. Skipping check-in job.';
         console.log(`[${dateString}] ${message}`);
-        // 주말 건너뛰기 알림은 로그로 충분하다고 판단하여 제거
+        // Weekend skip notification is deemed sufficient by log.
         return;
       }
-      const holidayInfo = await isTodayHoliday(calendar?.holidayCalendarUrl); // 옵셔널 체이닝 적용
+      const holidayInfo = await isTodayHoliday(calendar?.holidayCalendarUrl);
       if (holidayInfo) {
-        const message = `오늘은 공휴일 (${holidayInfo}) 입니다. 출근 작업을 건너<0xEB><0><0x8E>니다.`;
+        const message = `Today is a public holiday (${holidayInfo}). Skipping check-in job.`;
         console.log(`[${dateString}] ${message}`);
-        // 공휴일 건너뛰기 알림은 로그로 충분하다고 판단하여 제거
+        // Holiday skip notification is deemed sufficient by log.
         return;
       }
       runJob('checkIn');
     }, {
       timezone: timezone
     });
-    console.log(`출근 작업이 크론으로 스케줄되었습니다: ${checkInCron}`);
+    console.log(`Check-in job scheduled with cron: ${checkInCron}`);
 
     cron.schedule(checkOutCron, async () => {
       const today = new Date();
       const dateString = today.toISOString();
-      console.log(`[${dateString}] 퇴근 작업 실행 예정 (스케줄: ${checkOutCron})`);
+      console.log(`[${dateString}] Scheduled check-out: ${checkOutCron}`);
 
-      if (workHours?.weekdaysOnly && (today.getDay() === 0 || today.getDay() === 6)) { // 옵셔널 체이닝 적용
-        const message = `오늘은 주말입니다. 퇴근 작업을 건너<0xEB><0><0x8E>니다.`;
+      if (workHours?.weekdaysOnly && (today.getDay() === 0 || today.getDay() === 6)) {
+        const message = 'Today is a weekend. Skipping check-out job.';
         console.log(`[${dateString}] ${message}`);
-        // 주말 건너뛰기 알림은 로그로 충분하다고 판단하여 제거
+        // Weekend skip notification is deemed sufficient by log.
         return;
       }
-      const holidayInfo = await isTodayHoliday(calendar?.holidayCalendarUrl); // 옵셔널 체이닝 적용
+      const holidayInfo = await isTodayHoliday(calendar?.holidayCalendarUrl);
       if (holidayInfo) {
-        const message = `오늘은 공휴일 (${holidayInfo}) 입니다. 퇴근 작업을 건너<0xEB><0><0x8E>니다.`;
+        const message = `Today is a public holiday (${holidayInfo}). Skipping check-out job.`;
         console.log(`[${dateString}] ${message}`);
-        // 공휴일 건너뛰기 알림은 로그로 충분하다고 판단하여 제거
+        // Holiday skip notification is deemed sufficient by log.
         return;
       }
       runJob('checkOut');
     }, {
       timezone: timezone
     });
-    console.log(`퇴근 작업이 크론으로 스케줄되었습니다: ${checkOutCron}`);
+    console.log(`Check-out job scheduled with cron: ${checkOutCron}`);
 
   } catch (error) {
-    const errorMessage = `스케줄러 시작 중 오류 발생: ${error.message}`;
+    const errorMessage = `Error starting scheduler: ${error.message}`;
     console.error(errorMessage);
-    // getConfig() 실패 시 appConfig가 null일 수 있고, notificationService 초기화도 안됐을 수 있음.
-    // 이 경우 sendNotification은 내부적으로 경고를 로깅하고 알림을 보내지 않음.
-    await sendNotification(`[CRITICAL] ${errorMessage}`, true);
+    // If getConfig() fails, appConfig might be null, and notificationService might not be initialized.
+    // sendNotification will internally log a warning and not send if service is uninitialized.
+    // Fallback language to 'en' if config or lang is somehow undefined before this point.
+    const currentLang = appConfig?.telegram?.messageLanguage || 'en';
+    await sendNotification(getMessage(currentLang, 'schedulerStartError', { errorMsg: errorMessage }), true);
   }
 }
 

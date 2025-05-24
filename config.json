@@ -33,6 +33,7 @@
   },
   "telegram": {
     "botTokenEnvVar": "TELEGRAM_BOT_TOKEN",
-    "chatIdEnvVar": "TELEGRAM_CHAT_ID"
+    "chatIdEnvVar": "TELEGRAM_CHAT_ID",
+    "messageLanguage": "en"
   }
 }

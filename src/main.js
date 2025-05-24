@@ -1,16 +1,19 @@
-const { launchBrowserAndLoginPage, checkIn, checkOut, getConfig } = require('./jobcan');
-const { sendNotification } = require('./notificationService'); // Added: Import sendNotification
+const { launchBrowserAndLoginPage, checkIn, checkOut, getConfig, getMessage } = require('./jobcan'); // Import getMessage
+const { sendNotification } = require('./notificationService');
 
 async function main() {
   console.log('Starting Jobcan automation script...');
   let browser;
+  let config; // Define config in a broader scope
 
   try {
+    config = await getConfig(); // Load config early to use for all messages
+    const lang = config.telegram.messageLanguage;
+
     const args = process.argv.slice(2);
     const action = args[0]; // e.g., 'checkIn' or 'checkOut'
 
     if (!action) {
-      const config = await getConfig(); // Load config for help message
       console.log('---------------------------------------------------');
       console.log(' Jobcan Automatic Attendance Script');
       console.log('---------------------------------------------------');
@@ -24,19 +27,20 @@ async function main() {
       console.log('  npm run checkout');
       console.log('  npm run schedule  - Start the scheduler for automatic operations.');
       console.log('\nCurrent Configuration Highlights:');
-      console.log(`  - Scheduler Enabled: ${config.scheduler && config.scheduler.enabled}`);
-      if (config.scheduler && config.scheduler.enabled) {
+      console.log(`  - Scheduler Enabled: ${config.scheduler?.enabled}`); // Optional chaining for safety
+      if (config.scheduler?.enabled) {
         console.log(`    - Check-in Cron: ${config.scheduler.checkInCron}`);
         console.log(`    - Check-out Cron: ${config.scheduler.checkOutCron}`);
         console.log(`    - Timezone: ${config.scheduler.timezone}`);
       }
-      console.log(`  - Headless Mode: ${config.playwright && config.playwright.headless}`);
-      console.log(`  - Test Mode: ${config.appSettings && config.appSettings.testMode}`);
+      console.log(`  - Headless Mode: ${config.playwright?.headless}`); // Optional chaining
+      console.log(`  - Test Mode: ${config.appSettings?.testMode}`); // Optional chaining
       console.log('---------------------------------------------------');
       return;
     }
 
-    const { browser: launchedBrowser, page, config } = await launchBrowserAndLoginPage();
+    // Pass config to launchBrowserAndLoginPage, as it's already loaded
+    const { browser: launchedBrowser, page } = await launchBrowserAndLoginPage(config);
     browser = launchedBrowser; // Assign to outer scope for finally block
 
     console.log('Login process finished (or timed out).');
@@ -50,7 +54,11 @@ async function main() {
       console.log('Action: Check-Out');
       success = await checkOut(page, config);
     } else {
+      // Use getMessage for invalid action, though this is a console log, not a notification
+      // For consistency, we could create a message key for this if frequent.
       console.log(`Invalid action: ${action}. Please use 'checkIn' or 'checkOut'.`);
+      // Example if we wanted to notify for invalid action:
+      // await sendNotification(getMessage(lang, 'mainInvalidAction', { action }), true);
     }
 
     if (success) {
@@ -61,10 +69,12 @@ async function main() {
 
   } catch (error) {
     console.error('An error occurred in the main script:', error);
-    // Send notification for unhandled errors in main
-    // Ensure error.message is a string and provide a default if not.
-    const errorMessage = error && typeof error.message === 'string' ? error.message : '알 수 없는 오류 발생';
-    await sendNotification(`[CRITICAL] Jobcan 자동화 스크립트 메인 실행 중 심각한 오류 발생: ${errorMessage}`, true);
+    // Use getMessage for critical error notification
+    // Fallback language to 'en' if config or lang is somehow undefined
+    const currentLang = config?.telegram?.messageLanguage || 'en';
+    const errorMessage = error && typeof error.message === 'string' ? error.message : 'Unknown error occurred';
+    // Assuming a new message key 'mainScriptError'
+    await sendNotification(getMessage(currentLang, 'mainScriptError', { errorMsg: errorMessage }), true);
   } finally {
     if (browser) {
       console.log('Closing browser...');

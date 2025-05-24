@@ -81,7 +81,8 @@ jobcan-auto/
   },
   "telegram": {
     "botTokenEnvVar": "TELEGRAM_BOT_TOKEN",
-    "chatIdEnvVar": "TELEGRAM_CHAT_ID"
+    "chatIdEnvVar": "TELEGRAM_CHAT_ID",
+    "messageLanguage": "en"
   }
 }
 ```
@@ -221,3 +222,25 @@ TELEGRAM_CHAT_ID="your_telegram_chat_id"
     - [x] `exec` 명령어 실행 오류 시 알림
   - [x] `project.md` 작업 목록 업데이트 (텔레그램 기능 완료)
   - [x] 텔레그램 연동 기능 커밋
+
+- [ ] **다국어 지원 및 로깅/주석 표준화 (영어)**
+  - [X] `project.md`: 로깅/주석 영어 사용 규칙 및 텔레그램 메시지 언어 설정 지침 추가
+  - [X] `config.json`: `telegram.messageLanguage` 필드 추가 (기본값 "en")
+  - [X] `src/notificationService.js`:
+    - [X] 주석 및 로그 영어로 변경
+    - [X] `messageLanguage` 설정을 읽도록 `initializeNotificationService` 수정 (실제 메시지 선택은 호출 측에서)
+  - [X] `src/jobcan.js`:
+    - [X] 주석 및 로그 영어로 변경
+    - [X] `getConfig` 수정하여 `messageLanguage` 설정 제공
+    - [X] `sendNotification` 호출 시 언어 설정에 따라 메시지 분기 처리 (영/한 메시지 준비)
+    - [X] `getMessage` 함수 export
+  - [X] `src/main.js`:
+    - [X] 주석 및 로그 영어로 변경
+    - [X] `sendNotification` 호출 시 언어 설정에 따라 메시지 분기 처리 (getMessage 사용)
+  - [X] `src/scheduler.js`:
+    - [X] 주석 및 로그 영어로 변경
+    - [X] `sendNotification` 호출 시 언어 설정에 따라 메시지 분기 처리 (getMessage 사용)
+  - [X] `src/calendarService.js`:
+    - [X] 주석 및 로그 영어로 변경
+  - [ ] `project.md` 작업 목록 업데이트 (다국어 지원 및 표준화 완료)
+  - [ ] 다국어 지원 및 표준화 기능 커밋

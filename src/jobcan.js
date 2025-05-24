@@ -7,6 +7,71 @@ const { initializeNotificationService, sendNotification } = require('./notificat
 const CONFIG_PATH = path.join(__dirname, '..', 'config.json');
 let configInstance = null; // Cache config
 
+// Helper function to get localized messages
+function getMessage(lang, key, params = {}) {
+  const messages = {
+    en: {
+      configLoadError: `[ERROR] Failed to load configuration files (config.json or .env): ${params.errorMsg}`,
+      envNotFound: `.env file not found at: ${params.envPath}. Proceeding without it.`,
+      loadingEnv: `Loading .env file from: ${params.envPath}`,
+      loginCredentialsNotFound: '[WARNING] Jobcan login credentials (.env) not found. Manual login required.',
+      automaticLoginError: `[ERROR] Jobcan automatic login failed: ${params.errorMsg}`,
+      navigateToAttendanceError: `[ERROR] Failed to navigate to Jobcan attendance page (timeout or error): ${params.errorMsg}`,
+      browserLaunchError: `[ERROR] Critical error during browser launch or login page processing: ${params.errorMsg}`,
+      getWorkingStatusError: `[ERROR] Failed to get working status: ${params.errorMsg}`,
+      clickButtonError: `[ERROR] Error clicking attendance button or waiting for API response: ${params.errorMsg}`,
+      checkInProcessError: '[ERROR] Check-in process failed: Could not determine current working status.',
+      checkInClickError: '[ERROR] Check-in process failed: Failed to click the attendance button.',
+      checkInSuccess: `✅ Jobcan check-in complete. Current status: ${params.status}`,
+      checkInWarning: `[WARNING] Check-in may have failed or status change not confirmed. Current status: "${params.newStatus}", expected: "${params.expectedStatus}".`,
+      checkInAlreadyDone: `ℹ️ Already checked in. Status is "${params.status}".`,
+      checkInInvalidStatus: `[WARNING] Cannot check in. Current status is "${params.status}", expected "${params.expectedStatus}".`,
+      checkOutProcessError: '[ERROR] Check-out process failed: Could not determine current working status.',
+      checkOutClickError: '[ERROR] Check-out process failed: Failed to click the attendance button.',
+      checkOutSuccess: `✅ Jobcan check-out complete. Current status: ${params.status}`,
+      checkOutWarning: `[WARNING] Check-out may have failed or status change not confirmed. Current status: "${params.newStatus}", expected: "${params.expectedStatus}" or "${params.altExpectedStatus}".`,
+      checkOutAlreadyDone: `ℹ️ Already checked out or not checked in. Status is "${params.status}".`,
+      checkOutInvalidStatus: `[WARNING] Cannot check out. Current status is "${params.status}", expected "${params.expectedStatus}".`,
+      // New keys for main.js and scheduler.js
+      mainScriptError: `[CRITICAL] Critical error in main Jobcan automation script: ${params.errorMsg}`,
+      schedulerExecError: `[ERROR] Error executing scheduled ${params.action} job: ${params.errorMsg}`,
+      schedulerExecStdErr: `[WARNING] Stderr during scheduled ${params.action} job: ${params.stderrMsg}`,
+      schedulerInvalidCron: `[ERROR] Invalid cron expression for ${params.type}: ${params.cronExpr}`,
+      schedulerStartError: `[CRITICAL] Error starting scheduler: ${params.errorMsg}`,
+    },
+    ko: {
+      configLoadError: `[오류] 설정 파일(config.json 또는 .env) 로드 실패: ${params.errorMsg}`,
+      envNotFound: `.env 파일을 다음 경로에서 찾을 수 없습니다: ${params.envPath}. 없이 진행합니다.`,
+      loadingEnv: `.env 파일 로드 중: ${params.envPath}`,
+      loginCredentialsNotFound: '[경고] Jobcan 로그인 정보(.env)를 찾을 수 없습니다. 수동 로그인이 필요합니다.',
+      automaticLoginError: `[오류] Jobcan 자동 로그인 실패: ${params.errorMsg}`,
+      navigateToAttendanceError: `[오류] Jobcan 출퇴근 페이지 접속 실패 (타임아웃 또는 오류): ${params.errorMsg}`,
+      browserLaunchError: `[오류] 브라우저 시작 또는 로그인 페이지 처리 중 심각한 오류: ${params.errorMsg}`,
+      getWorkingStatusError: `[오류] 근무 상태 확인 실패: ${params.errorMsg}`,
+      clickButtonError: `[오류] 출퇴근 버튼 클릭 또는 API 응답 대기 중 오류: ${params.errorMsg}`,
+      checkInProcessError: '[오류] 출근 처리 실패: 현재 근무 상태를 확인할 수 없습니다.',
+      checkInClickError: '[오류] 출근 처리 실패: 출근 버튼 클릭에 실패했습니다.',
+      checkInSuccess: `✅ Jobcan 출근 처리가 완료되었습니다. 현재 상태: ${params.status}`,
+      checkInWarning: `[주의] 출근 처리가 실패했거나 상태 변경이 확인되지 않았습니다. 현재 상태: "${params.newStatus}", 예상 상태: "${params.expectedStatus}".`,
+      checkInAlreadyDone: `ℹ️ 이미 출근한 상태입니다 (${params.status}).`,
+      checkInInvalidStatus: `[경고] 출근할 수 없습니다. 현재 상태: "${params.status}", 예상 상태: "${params.expectedStatus}".`,
+      checkOutProcessError: '[오류] 퇴근 처리 실패: 현재 근무 상태를 확인할 수 없습니다.',
+      checkOutClickError: '[오류] 퇴근 처리 실패: 퇴근 버튼 클릭에 실패했습니다.',
+      checkOutSuccess: `✅ Jobcan 퇴근 처리가 완료되었습니다. 현재 상태: ${params.status}`,
+      checkOutWarning: `[주의] 퇴근 처리가 실패했거나 상태 변경이 확인되지 않았습니다. 현재 상태: "${params.newStatus}", 예상 상태: "${params.expectedStatus}" 또는 "${params.altExpectedStatus}".`,
+      checkOutAlreadyDone: `ℹ️ 이미 퇴근했거나 출근하지 않은 상태입니다. 현재 상태: "${params.status}".`,
+      checkOutInvalidStatus: `[경고] 퇴근할 수 없습니다. 현재 상태: "${params.status}", 예상 상태: "${params.expectedStatus}".`,
+      // New keys for main.js and scheduler.js
+      mainScriptError: `[CRITICAL] Jobcan 자동화 스크립트 메인 실행 중 심각한 오류 발생: ${params.errorMsg}`,
+      schedulerExecError: `[오류] 스케줄된 ${params.action} 작업 실행 중 오류 발생: ${params.errorMsg}`,
+      schedulerExecStdErr: `[경고] 스케줄된 ${params.action} 작업 실행 중 표준 오류 발생: ${params.stderrMsg}`,
+      schedulerInvalidCron: `[오류] 잘못된 ${params.type} 크론 표현식: ${params.cronExpr}`,
+      schedulerStartError: `[CRITICAL] 스케줄러 시작 중 오류 발생: ${params.errorMsg}`,
+    }
+  };
+  return messages[lang]?.[key] || messages.en[key] || `Missing message for key: ${key}`;
+}
+
 async function getConfig() {
   if (configInstance) {
     return configInstance;
@@ -15,40 +80,38 @@ async function getConfig() {
     const configData = await fs.readFile(CONFIG_PATH, 'utf-8');
     const config = JSON.parse(configData);
 
-    // .env 파일 경로를 config에서 명시적으로 가져오도록 수정 (옵셔널 체이닝 사용)
     const envFileName = config?.jobcan?.loginCredentials?.envFilePath ?? '.env';
     const envPath = path.resolve(__dirname, '..', envFileName);
 
     if (await fs.access(envPath).then(() => true).catch(() => false)) {
-      console.log(`Loading .env file from: ${envPath}`);
+      console.log(getMessage('en', 'loadingEnv', { envPath }));
       dotenv.config({ path: envPath });
     } else {
-      console.warn(`.env file not found at: ${envPath}. Proceeding without it.`);
-      // .env 파일이 없으면 텔레그램 알림 및 자동 로그인이 불가능할 수 있음을 알림
-      // 이 부분은 initializeNotificationService 내부에서도 처리되지만, 여기서도 명시적으로 알 수 있음
+      console.warn(getMessage('en', 'envNotFound', { envPath }));
     }
 
-    // Initialize notification service with loaded config
-    // config 객체를 전달하여 notificationService가 필요한 환경 변수 이름을 알 수 있도록 함
     initializeNotificationService(config);
 
-    configInstance = config; // Cache the loaded and processed config
+    // Ensure messageLanguage is set, default to 'en'
+    if (!config.telegram) config.telegram = {};
+    config.telegram.messageLanguage = config.telegram.messageLanguage || 'en';
+
+    configInstance = config;
     return config;
   } catch (error) {
-    console.error('Error reading or parsing config.json or .env file:', error);
-    // Notify about config loading error
-    // At this stage, sendNotification might not be initialized if config loading failed before its initialization.
-    // Consider a fallback or ensure critical errors are logged/handled even if notifications aren't up.
-    // For now, we'll attempt to send a notification if possible, but it might fail.
-    sendNotification(`[오류] 설정 파일(config.json 또는 .env) 로드 실패: ${error.message}`, true).catch(console.error);
+    console.error(`Error reading or parsing config.json or .env file: ${error.message}`);
+    // Attempt to send notification in default language (English) as config might be broken
+    const lang = configInstance?.telegram?.messageLanguage || 'en';
+    await sendNotification(getMessage(lang, 'configLoadError', { errorMsg: error.message }), true);
     throw error;
   }
 }
 
 async function launchBrowserAndLoginPage() {
-  let browser; // Declare browser outside try block for access in catch/finally
+  let browser;
   try {
-    const config = await getConfig(); // Ensures config is loaded and notification service initialized
+    const config = await getConfig();
+    const lang = config.telegram.messageLanguage;
     const { loginUrl, attendanceUrl, loginCredentials } = config.jobcan;
     const { emailXPath, passwordXPath, loginButtonXPath } = loginCredentials;
     const { headless } = config.playwright;
@@ -71,17 +134,15 @@ async function launchBrowserAndLoginPage() {
         await page.fill(passwordXPath, jobcanPassword);
         await page.click(loginButtonXPath);
         console.log('Login form submitted.');
-        // 자동 로그인 성공/실패는 아래 네비게이션 성공 여부로 판단하므로 별도 알림 없음
       } catch (error) {
-        console.error('Error during automatic login attempt:', error);
-        await sendNotification(`[오류] Jobcan 자동 로그인 실패: ${error.message}`, true);
+        console.error('Error during automatic login attempt:', error.message);
+        await sendNotification(getMessage(lang, 'automaticLoginError', { errorMsg: error.message }), true);
         console.log('Please log in manually.');
-        // 자동 로그인 실패 시 수동 로그인을 위해 브라우저를 유지할 수 있으므로, 여기서 브라우저를 닫지 않음
       }
     } else {
-      const message = 'Jobcan 로그인 정보(.env)를 찾을 수 없습니다. 수동 로그인이 필요합니다.';
+      const message = 'Jobcan login credentials (.env) not found. Manual login required.';
       console.log(message);
-      await sendNotification(`[경고] ${message}`, true);
+      await sendNotification(getMessage(lang, 'loginCredentialsNotFound'), true);
     }
 
     console.log(`Waiting for navigation to attendance page: ${attendanceUrl} or for 2 minutes...`);
@@ -89,53 +150,52 @@ async function launchBrowserAndLoginPage() {
     try {
       await page.waitForURL(url => url.startsWith(attendanceUrl), { timeout: 120000 });
       console.log('Successfully navigated to the attendance page.');
-      // 출퇴근 페이지 접속 성공 알림은 너무 잦을 수 있어 생략
     } catch (error) {
-      console.error('Timeout or error while waiting for navigation to attendance page:', error);
-      await sendNotification(`[오류] Jobcan 출퇴근 페이지 접속 실패 (타임아웃 또는 오류): ${error.message}`, true);
+      console.error('Timeout or error while waiting for navigation to attendance page:', error.message);
+      await sendNotification(getMessage(lang, 'navigateToAttendanceError', { errorMsg: error.message }), true);
       console.log('Browser will remain open for manual intervention or inspection.');
-      // 페이지 접속 실패 시에도 브라우저를 열어둘 수 있으므로, 여기서 닫지 않음
-      // throw error; // 에러를 다시 던져서 main.js에서 처리하도록 할 수 있음
     }
-    return { browser, page, config }; // config도 반환하여 재사용
+    return { browser, page, config };
 
   } catch (error) {
-    console.error('Error in launchBrowserAndLoginPage:', error);
-    await sendNotification(`[오류] 브라우저 시작 또는 로그인 페이지 처리 중 심각한 오류: ${error.message}`, true);
+    console.error('Error in launchBrowserAndLoginPage:', error.message);
+    const lang = configInstance?.telegram?.messageLanguage || 'en'; // Fallback if config failed to load fully
+    await sendNotification(getMessage(lang, 'browserLaunchError', { errorMsg: error.message }), true);
     if (browser) {
-      await browser.close(); // 심각한 오류 시 브라우저 정리
+      await browser.close();
     }
-    throw error; // Re-throw to be caught by main.js
+    throw error;
   }
 }
 
 async function getWorkingStatus(page, config) {
+  const lang = config.telegram.messageLanguage;
   try {
-    const statusElement = await page.waitForSelector(config.jobcan.workingStatusXPath, { timeout: 10000 }); // 늘린 타임아웃
+    const statusElement = await page.waitForSelector(config.jobcan.workingStatusXPath, { timeout: 10000 });
     const statusText = await statusElement.textContent();
     console.log(`Current working status: ${statusText.trim()}`);
     return statusText.trim();
   } catch (error) {
-    console.error('Error getting working status:', error);
-    await sendNotification(`[오류] 근무 상태 확인 실패: ${error.message}`, true); // 알림 추가
-    return null; // Return null or throw error as per preference
+    console.error('Error getting working status:', error.message);
+    await sendNotification(getMessage(lang, 'getWorkingStatusError', { errorMsg: error.message }), true);
+    return null;
   }
 }
 
 async function clickAttendanceButton(page, config) {
+  const lang = config.telegram.messageLanguage;
   if (config.appSettings.testMode) {
     console.log('[Test Mode] Attendance button click skipped.');
-    return true; // Simulate success in test mode
+    return true;
   }
   try {
     console.log('Attempting to click attendance button...');
-    // Promise for waiting for API response
     const responsePromise = page.waitForResponse(
       response =>
-        response.url().includes('jobcan.jp/employee/') && // API URL pattern (may need adjustment)
-        (response.request().method() === 'POST' || response.request().method() === 'PUT') && // Typically state-changing requests
-        response.status() === 200, // Successful response code
-      { timeout: 10000 } // Max 10 seconds wait
+        response.url().includes('jobcan.jp/employee/') &&
+        (response.request().method() === 'POST' || response.request().method() === 'PUT') &&
+        response.status() === 200,
+      { timeout: 10000 }
     );
 
     await page.click(config.jobcan.attendanceButtonXPath);
@@ -146,102 +206,109 @@ async function clickAttendanceButton(page, config) {
       console.log(`API response received: ${response.status()} ${response.url()}`);
     } catch (e) {
       console.warn('API response timed out or did not match criteria after 10 seconds.');
-      // Even if API response isn't caught, UI might have updated, so proceed
     }
 
-    // Add a short wait for potential UI updates after API response
     await page.waitForTimeout(1500);
     console.log('Waited for potential UI update after API response.');
     return true;
   } catch (error) {
-    console.error('Error clicking attendance button or waiting for API response:', error);
-    await sendNotification(`[오류] 출퇴근 버튼 클릭 또는 API 응답 대기 중 오류: ${error.message}`, true); // 알림 추가
+    console.error('Error clicking attendance button or waiting for API response:', error.message);
+    await sendNotification(getMessage(lang, 'clickButtonError', { errorMsg: error.message }), true);
     return false;
   }
 }
 
 async function checkIn(page, config) {
+  const lang = config.telegram.messageLanguage;
   console.log('Attempting Check-In...');
   const currentStatus = await getWorkingStatus(page, config);
 
-  if (currentStatus === null) { // 근무 상태 확인 실패 시
-    await sendNotification('[오류] 출근 처리 실패: 현재 근무 상태를 확인할 수 없습니다.', true);
+  if (currentStatus === null) {
+    await sendNotification(getMessage(lang, 'checkInProcessError'), true);
     return false;
   }
 
-  if (currentStatus === '미출근') {
-    console.log('Status is "미출근". Proceeding with check-in.');
+  // Standard Jobcan statuses (Korean)
+  const STATUS_NOT_CHECKED_IN_KO = '미출근';
+  const STATUS_WORKING_KO = '근무중';
+
+  if (currentStatus === STATUS_NOT_CHECKED_IN_KO) {
+    console.log(`Status is "${STATUS_NOT_CHECKED_IN_KO}". Proceeding with check-in.`);
     const clicked = await clickAttendanceButton(page, config);
     if (clicked) {
       const newStatus = await getWorkingStatus(page, config);
-      if (newStatus === '근무중') {
-        console.log('Check-In successful. Status changed to "근무중".');
-        await sendNotification('✅ Jobcan 출근 처리가 완료되었습니다. 현재 상태: 근무중');
+      if (newStatus === STATUS_WORKING_KO) {
+        console.log(`Check-In successful. Status changed to "${STATUS_WORKING_KO}".`);
+        await sendNotification(getMessage(lang, 'checkInSuccess', { status: newStatus }));
         return true;
       } else {
-        const message = `출근 처리가 실패했거나 상태 변경이 확인되지 않았습니다. 현재 상태: "${newStatus}", 예상 상태: "근무중".`;
-        console.log(message);
-        await sendNotification(`[주의] ${message}`, true);
+        const params = { newStatus: newStatus, expectedStatus: STATUS_WORKING_KO };
+        console.log(getMessage('en', 'checkInWarning', params)); // Log in English
+        await sendNotification(getMessage(lang, 'checkInWarning', params), true);
         return false;
       }
-    } else { // 클릭 실패 시
-      await sendNotification('[오류] 출근 처리 실패: 출근 버튼 클릭에 실패했습니다.', true);
+    } else {
+      await sendNotification(getMessage(lang, 'checkInClickError'), true);
       return false;
     }
-  } else if (currentStatus === '근무중') {
-    console.log('Already checked in. Status is "근무중".');
-    // 이미 출근한 상태 알림은 생략
+  } else if (currentStatus === STATUS_WORKING_KO) {
+    const params = { status: currentStatus };
+    console.log(getMessage('en', 'checkInAlreadyDone', params)); // Log in English
+    // await sendNotification(getMessage(lang, 'checkInAlreadyDone', params)); // Optional: notify if already checked in
     return true;
   } else {
-    const message = `출근할 수 없습니다. 현재 상태: "${currentStatus}", 예상 상태: "미출근".`;
-    console.log(message);
-    await sendNotification(`[경고] ${message}`, true);
+    const params = { status: currentStatus, expectedStatus: STATUS_NOT_CHECKED_IN_KO };
+    console.log(getMessage('en', 'checkInInvalidStatus', params)); // Log in English
+    await sendNotification(getMessage(lang, 'checkInInvalidStatus', params), true);
     return false;
   }
-  // 이 부분은 모든 조건이 위에서 처리되므로 도달하지 않음
 }
 
 async function checkOut(page, config) {
+  const lang = config.telegram.messageLanguage;
   console.log('Attempting Check-Out...');
   const currentStatus = await getWorkingStatus(page, config);
 
-  if (currentStatus === null) { // 근무 상태 확인 실패 시
-    await sendNotification('[오류] 퇴근 처리 실패: 현재 근무 상태를 확인할 수 없습니다.', true);
+  if (currentStatus === null) {
+    await sendNotification(getMessage(lang, 'checkOutProcessError'), true);
     return false;
   }
 
-  if (currentStatus === '근무중') {
-    console.log('Status is "근무중". Proceeding with check-out.');
+  // Standard Jobcan statuses (Korean)
+  const STATUS_WORKING_KO = '근무중';
+  const STATUS_RESTING_KO = '휴식중'; // Expected after checkout as per project.md
+  const STATUS_NOT_CHECKED_IN_KO = '미출근'; // Also a possible state after checkout
+
+  if (currentStatus === STATUS_WORKING_KO) {
+    console.log(`Status is "${STATUS_WORKING_KO}". Proceeding with check-out.`);
     const clicked = await clickAttendanceButton(page, config);
     if (clicked) {
       const newStatus = await getWorkingStatus(page, config);
-      // As per project.md, expecting '휴식중'. This might need verification.
-      if (newStatus === '휴식중' || newStatus === '미출근') { // Allowing '미출근' as a possible post-checkout state
+      if (newStatus === STATUS_RESTING_KO || newStatus === STATUS_NOT_CHECKED_IN_KO) {
         console.log(`Check-Out successful. Status changed to "${newStatus}".`);
-        await sendNotification(`✅ Jobcan 퇴근 처리가 완료되었습니다. 현재 상태: ${newStatus}`);
+        await sendNotification(getMessage(lang, 'checkOutSuccess', { status: newStatus }));
         return true;
       } else {
-        const message = `퇴근 처리가 실패했거나 상태 변경이 확인되지 않았습니다. 현재 상태: "${newStatus}", 예상 상태: "휴식중" 또는 "미출근".`;
-        console.log(message);
-        await sendNotification(`[주의] ${message}`, true);
+        const params = { newStatus: newStatus, expectedStatus: STATUS_RESTING_KO, altExpectedStatus: STATUS_NOT_CHECKED_IN_KO };
+        console.log(getMessage('en', 'checkOutWarning', params)); // Log in English
+        await sendNotification(getMessage(lang, 'checkOutWarning', params), true);
         return false;
       }
-    } else { // 클릭 실패 시
-      await sendNotification('[오류] 퇴근 처리 실패: 퇴근 버튼 클릭에 실패했습니다.', true);
+    } else {
+      await sendNotification(getMessage(lang, 'checkOutClickError'), true);
       return false;
     }
-  } else if (currentStatus === '휴식중' || currentStatus === '미출근') {
-    const message = `이미 퇴근했거나 출근하지 않은 상태입니다. 현재 상태: "${currentStatus}".`;
-    console.log(message);
-    // 이미 퇴근한 상태 알림은 생략
+  } else if (currentStatus === STATUS_RESTING_KO || currentStatus === STATUS_NOT_CHECKED_IN_KO) {
+    const params = { status: currentStatus };
+    console.log(getMessage('en', 'checkOutAlreadyDone', params)); // Log in English
+    // await sendNotification(getMessage(lang, 'checkOutAlreadyDone', params)); // Optional: notify if already checked out
     return true;
   } else {
-    const message = `퇴근할 수 없습니다. 현재 상태: "${currentStatus}", 예상 상태: "근무중".`;
-    console.log(message);
-    await sendNotification(`[경고] ${message}`, true);
+    const params = { status: currentStatus, expectedStatus: STATUS_WORKING_KO };
+    console.log(getMessage('en', 'checkOutInvalidStatus', params)); // Log in English
+    await sendNotification(getMessage(lang, 'checkOutInvalidStatus', params), true);
     return false;
   }
-  // 이 부분은 모든 조건이 위에서 처리되므로 도달하지 않음
 }
 
 module.exports = {
@@ -250,4 +317,5 @@ module.exports = {
   getWorkingStatus,
   checkIn,
   checkOut,
+  getMessage, // Export getMessage
 };
