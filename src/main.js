@@ -1,4 +1,5 @@
 const { launchBrowserAndLoginPage, checkIn, checkOut, getConfig } = require('./jobcan');
+const { sendNotification } = require('./notificationService'); // Added: Import sendNotification
 
 async function main() {
   console.log('Starting Jobcan automation script...');
@@ -60,6 +61,10 @@ async function main() {
 
   } catch (error) {
     console.error('An error occurred in the main script:', error);
+    // Send notification for unhandled errors in main
+    // Ensure error.message is a string and provide a default if not.
+    const errorMessage = error && typeof error.message === 'string' ? error.message : '알 수 없는 오류 발생';
+    await sendNotification(`[CRITICAL] Jobcan 자동화 스크립트 메인 실행 중 심각한 오류 발생: ${errorMessage}`, true);
   } finally {
     if (browser) {
       console.log('Closing browser...');

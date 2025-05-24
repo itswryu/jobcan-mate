@@ -30,5 +30,9 @@
   },
   "calendar": {
     "holidayCalendarUrl": "https://calendar.google.com/calendar/ical/ko.south_korea%23holiday%40group.v.calendar.google.com/public/basic.ics"
+  },
+  "telegram": {
+    "botTokenEnvVar": "TELEGRAM_BOT_TOKEN",
+    "chatIdEnvVar": "TELEGRAM_CHAT_ID"
   }
 }

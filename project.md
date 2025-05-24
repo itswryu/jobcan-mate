@@ -28,7 +28,8 @@ jobcan-auto/
 │   ├── main.js             # 메인 실행 스크립트
 │   ├── jobcan.js           # Jobcan 관련 로직 (로그인, 출퇴근 처리)
 │   ├── scheduler.js        # 자동 실행 스케줄러
-│   └── calendarService.js  # Google Calendar ICS 파싱 및 공휴일 확인 서비스
+│   ├── calendarService.js  # Google Calendar ICS 파싱 및 공휴일 확인 서비스
+│   └── notificationService.js # 알림 서비스 (텔레그램 등)
 ├── config.json             # 설정 파일 (근무시간, URL, ICS URL 등)
 ├── project.md              # 프로젝트 가이드라인
 ├── package.json
@@ -77,6 +78,10 @@ jobcan-auto/
   },
   "calendar": {
     "holidayCalendarUrl": "https://calendar.google.com/calendar/ical/ko.south_korea%23holiday%40group.v.calendar.google.com/public/basic.ics"
+  },
+  "telegram": {
+    "botTokenEnvVar": "TELEGRAM_BOT_TOKEN",
+    "chatIdEnvVar": "TELEGRAM_CHAT_ID"
   }
 }
 ```
@@ -86,6 +91,8 @@ jobcan-auto/
 ```env
 JOBCAN_EMAIL="your_email@example.com"
 JOBCAN_PASSWORD="your_actual_password"
+TELEGRAM_BOT_TOKEN="your_telegram_bot_token"
+TELEGRAM_CHAT_ID="your_telegram_chat_id"
 ```
 
 `.env` 파일은 `.gitignore`에 추가하여 버전 관리에서 제외하는 것을 권장합니다.
@@ -114,6 +121,8 @@ JOBCAN_PASSWORD="your_actual_password"
   ```env
   JOBCAN_EMAIL="your_email@example.com"
   JOBCAN_PASSWORD="your_password"
+  TELEGRAM_BOT_TOKEN="your_telegram_bot_token"
+  TELEGRAM_CHAT_ID="your_telegram_chat_id"
   ```
 
 - **수동 실행**: 특정 작업을 즉시 실행하려면 다음 명령을 사용합니다.
@@ -190,3 +199,25 @@ JOBCAN_PASSWORD="your_actual_password"
 - [X] `src/scheduler.js`에 공휴일 체크 로직 연동
   - [X] 스케줄 실행 전 `isTodayHoliday` 호출
   - [X] 공휴일일 경우 작업 건너뛰고 로그 기록
+- [x] **텔레그램 알림 기능 추가**
+  - [x] `project.md`: `node-telegram-bot-api` 라이브러리 추가, `config.json` 및 `.env` 예시 업데이트
+  - [x] `config.json`: `telegram` 섹션 추가 (봇 토큰 및 채팅 ID 환경 변수 이름)
+  - [x] (사용자 작업) 텔레그램 봇 생성 및 API 토큰, 채팅 ID를 `.env` 파일에 추가
+  - [x] `src/notificationService.js` 파일 생성
+    - [x] 환경 변수에서 텔레그램 봇 토큰 및 채팅 ID 로드
+    - [x] `sendNotification(message)` 함수 구현
+    - [x] 토큰 또는 채팅 ID 누락 시 오류 처리
+  - [x] `src/jobcan.js` 수정
+    - [x] `getConfig` 함수에서 텔레그램 관련 환경 변수 로드하도록 수정
+    - [x] `notificationService.js`의 `sendNotification` 함수 import 및 사용
+      - [x] 출퇴근 성공/실패 시 알림
+      - [x] `launchBrowserAndLoginPage` 함수 내 웹사이트 접속 또는 로그인 오류 발생 시 알림
+      - [x] 기타 예외 발생 시 알림
+  - [x] `src/main.js` 수정
+    - [x] `notificationService.js`의 `sendNotification` 함수 import 및 사용
+    - [x] 메인 `try...catch` 블록에서 오류 발생 시 알림
+  - [x] (선택 사항) `src/scheduler.js` 수정
+    - [x] 공휴일/주말로 인한 작업 건너뛰기 시 알림 고려 (콘솔 로그로 대체)
+    - [x] `exec` 명령어 실행 오류 시 알림
+  - [x] `project.md` 작업 목록 업데이트 (텔레그램 기능 완료)
+  - [ ] 텔레그램 연동 기능 커밋
