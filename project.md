@@ -27,8 +27,9 @@ jobcan-auto/
 ├── src/
 │   ├── main.js             # 메인 실행 스크립트
 │   ├── jobcan.js           # Jobcan 관련 로직 (로그인, 출퇴근 처리)
-│   └── scheduler.js        # 자동 실행 스케줄러
-├── config.json             # 설정 파일 (근무시간, URL 등)
+│   ├── scheduler.js        # 자동 실행 스케줄러
+│   └── calendarService.js  # Google Calendar ICS 파싱 및 공휴일 확인 서비스
+├── config.json             # 설정 파일 (근무시간, URL, ICS URL 등)
 ├── project.md              # 프로젝트 가이드라인
 ├── package.json
 └── package-lock.json
@@ -73,6 +74,9 @@ jobcan-auto/
   },
   "appSettings": {
     "testMode": false
+  },
+  "calendar": {
+    "holidayCalendarUrl": "https://calendar.google.com/calendar/ical/ko.south_korea%23holiday%40group.v.calendar.google.com/public/basic.ics"
   }
 }
 ```
@@ -178,3 +182,11 @@ JOBCAN_PASSWORD="your_actual_password"
 - [X] 간단한 로그 기록 기능 구현 (콘솔 출력)
 - [X] README.md (또는 `project.md`에 통합)에 사용 방법 상세 기술
 - [X] `main.js`에서 인자 없이 실행 시 도움말 또는 기본 정보 출력 기능 (선택 사항)
+- [X] `node-ical` 라이브러리 설치 (`npm install node-ical`)
+- [X] `config.json`에 공휴일 ICS URL 필드 추가 (`calendar.holidayCalendarUrl`)
+- [X] `src/calendarService.js` 모듈 생성 및 공휴일 확인 기능 구현
+  - [X] ICS URL 파싱 로직
+  - [X] 오늘 날짜와 비교하여 공휴일 여부 반환
+- [X] `src/scheduler.js`에 공휴일 체크 로직 연동
+  - [X] 스케줄 실행 전 `isTodayHoliday` 호출
+  - [X] 공휴일일 경우 작업 건너뛰고 로그 기록

@@ -1,7 +1,8 @@
 const cron = require('node-cron');
 const { exec } = require('child_process');
 const path = require('path');
-const { getConfig } = require('./jobcan'); // getConfig 함수를 jobcan.js에서 가져옵니다.
+const { getConfig } = require('./jobcan');
+const { isTodayHoliday } = require('./calendarService'); // 공휴일 확인 함수 추가
 
 const mainScriptPath = path.join(__dirname, 'main.js');
 
@@ -23,7 +24,7 @@ async function runJob(action) {
 async function startScheduler() {
   try {
     const config = await getConfig();
-    const { scheduler } = config;
+    const { scheduler, workHours } = config; // workHours 추가
 
     if (!scheduler || !scheduler.enabled) {
       console.log('Scheduler is disabled in config.json.');
@@ -43,16 +44,34 @@ async function startScheduler() {
 
     console.log(`Scheduler started. Timezone: ${timezone || 'System Default'}`);
 
-    cron.schedule(checkInCron, () => {
+    cron.schedule(checkInCron, async () => { // async 추가
       console.log(`[${new Date().toISOString()}] Triggering check-in job as per schedule: ${checkInCron}`);
+      if (workHours && workHours.weekdaysOnly && (new Date().getDay() === 0 || new Date().getDay() === 6)) {
+        console.log(`[${new Date().toISOString()}] Today is a weekend. Skipping check-in job.`);
+        return;
+      }
+      const holiday = await isTodayHoliday();
+      if (holiday) {
+        console.log(`[${new Date().toISOString()}] Today is a public holiday. Skipping check-in job.`);
+        return;
+      }
       runJob('checkIn');
     }, {
       timezone: timezone
     });
     console.log(`Scheduled check-in job with cron: ${checkInCron}`);
 
-    cron.schedule(checkOutCron, () => {
+    cron.schedule(checkOutCron, async () => { // async 추가
       console.log(`[${new Date().toISOString()}] Triggering check-out job as per schedule: ${checkOutCron}`);
+      if (workHours && workHours.weekdaysOnly && (new Date().getDay() === 0 || new Date().getDay() === 6)) {
+        console.log(`[${new Date().toISOString()}] Today is a weekend. Skipping check-out job.`);
+        return;
+      }
+      const holiday = await isTodayHoliday();
+      if (holiday) {
+        console.log(`[${new Date().toISOString()}] Today is a public holiday. Skipping check-out job.`);
+        return;
+      }
       runJob('checkOut');
     }, {
       timezone: timezone
