@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+.git
+.gitignore
+README.md
+project.md
+# Add any other files or directories that should not be included in the Docker image
+# .env file should not be here as it will be handled by Kubernetes Secrets

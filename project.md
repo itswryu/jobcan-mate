@@ -223,7 +223,7 @@ TELEGRAM_CHAT_ID="your_telegram_chat_id"
   - [x] `project.md` 작업 목록 업데이트 (텔레그램 기능 완료)
   - [x] 텔레그램 연동 기능 커밋
 
-- [ ] **다국어 지원 및 로깅/주석 표준화 (영어)**
+- [X] **다국어 지원 및 로깅/주석 표준화 (영어)**
   - [X] `project.md`: 로깅/주석 영어 사용 규칙 및 텔레그램 메시지 언어 설정 지침 추가
   - [X] `config.json`: `telegram.messageLanguage` 필드 추가 (기본값 "en")
   - [X] `src/notificationService.js`:
@@ -242,5 +242,5 @@ TELEGRAM_CHAT_ID="your_telegram_chat_id"
     - [X] `sendNotification` 호출 시 언어 설정에 따라 메시지 분기 처리 (getMessage 사용)
   - [X] `src/calendarService.js`:
     - [X] 주석 및 로그 영어로 변경
-  - [ ] `project.md` 작업 목록 업데이트 (다국어 지원 및 표준화 완료)
-  - [ ] 다국어 지원 및 표준화 기능 커밋
+  - [X] `project.md` 작업 목록 업데이트 (다국어 지원 및 표준화 완료)
+  - [X] 다국어 지원 및 표준화 기능 커밋
