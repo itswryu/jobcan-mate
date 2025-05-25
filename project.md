@@ -6,18 +6,18 @@
 
 ## 2. 개발 환경
 
--   **언어**: Node.js
--   **테스트 프레임워크**: Playwright
--   **패키지 매니저**: npm (또는 yarn)
+- **언어**: Node.js
+- **테스트 프레임워크**: Playwright
+- **패키지 매니저**: npm (또는 yarn)
 
 ## 3. 주요 기능
 
--   설정 파일을 통한 유연한 설정 (근무 요일, 출퇴근 시간, 실행 모드 등)
--   지정된 시간에 자동으로 출퇴근 기록 실행
--   헤드리스(백그라운드) 모드와 포그라운드(화면 표시) 모드 지원
--   로그인 페이지 및 출퇴근 기록 페이지 자동 이동
--   사용자 직접 로그인을 위한 브라우저 실행 기능
--   실행 결과 및 오류 로깅
+- 설정 파일을 통한 유연한 설정 (근무 요일, 출퇴근 시간, 실행 모드 등)
+- 지정된 시간에 자동으로 출퇴근 기록 실행
+- 헤드리스(백그라운드) 모드와 포그라운드(화면 표시) 모드 지원
+- 로그인 페이지 및 출퇴근 기록 페이지 자동 이동
+- 사용자 직접 로그인을 위한 브라우저 실행 기능
+- 실행 결과 및 오류 로깅
 
 ## 4. 프로젝트 구조 (예상)
 
@@ -73,7 +73,8 @@ jobcan-auto/
     "timezone": "Asia/Seoul"
   },
   "playwright": {
-    "headless": false
+    "headless": false,
+    "locale": "ko-KR"
   },
   "appSettings": {
     "testMode": false,
@@ -204,28 +205,28 @@ TELEGRAM_CHAT_ID="your_telegram_chat_id"
 - [X] `src/scheduler.js`에 공휴일 체크 로직 연동
   - [X] 스케줄 실행 전 `isTodayHoliday` 호출
   - [X] 공휴일일 경우 작업 건너뛰고 로그 기록
-- [x] **텔레그램 알림 기능 추가**
-  - [x] `project.md`: `node-telegram-bot-api` 라이브러리 추가, `config.json` 및 `.env` 예시 업데이트
-  - [x] `config.json`: `telegram` 섹션 추가 (봇 토큰 및 채팅 ID 환경 변수 이름)
-  - [x] (사용자 작업) 텔레그램 봇 생성 및 API 토큰, 채팅 ID를 `.env` 파일에 추가
-  - [x] `src/notificationService.js` 파일 생성
-    - [x] 환경 변수에서 텔레그램 봇 토큰 및 채팅 ID 로드
-    - [x] `sendNotification(message)` 함수 구현
-    - [x] 토큰 또는 채팅 ID 누락 시 오류 처리
-  - [x] `src/jobcan.js` 수정
-    - [x] `getConfig` 함수에서 텔레그램 관련 환경 변수 로드하도록 수정
-    - [x] `notificationService.js`의 `sendNotification` 함수 import 및 사용
-      - [x] 출퇴근 성공/실패 시 알림
-      - [x] `launchBrowserAndLoginPage` 함수 내 웹사이트 접속 또는 로그인 오류 발생 시 알림
-      - [x] 기타 예외 발생 시 알림
-  - [x] `src/main.js` 수정
-    - [x] `notificationService.js`의 `sendNotification` 함수 import 및 사용
-    - [x] 메인 `try...catch` 블록에서 오류 발생 시 알림
-  - [x] (선택 사항) `src/scheduler.js` 수정
-    - [x] 공휴일/주말로 인한 작업 건너뛰기 시 알림 고려 (콘솔 로그로 대체)
-    - [x] `exec` 명령어 실행 오류 시 알림
-  - [x] `project.md` 작업 목록 업데이트 (텔레그램 기능 완료)
-  - [x] 텔레그램 연동 기능 커밋
+- [X] **텔레그램 알림 기능 추가**
+  - [X] `project.md`: `node-telegram-bot-api` 라이브러리 추가, `config.json` 및 `.env` 예시 업데이트
+  - [X] `config.json`: `telegram` 섹션 추가 (봇 토큰 및 채팅 ID 환경 변수 이름)
+  - [X] (사용자 작업) 텔레그램 봇 생성 및 API 토큰, 채팅 ID를 `.env` 파일에 추가
+  - [X] `src/notificationService.js` 파일 생성
+    - [X] 환경 변수에서 텔레그램 봇 토큰 및 채팅 ID 로드
+    - [X] `sendNotification(message)` 함수 구현
+    - [X] 토큰 또는 채팅 ID 누락 시 오류 처리
+  - [X] `src/jobcan.js` 수정
+    - [X] `getConfig` 함수에서 텔레그램 관련 환경 변수 로드하도록 수정
+    - [X] `notificationService.js`의 `sendNotification` 함수 import 및 사용
+      - [X] 출퇴근 성공/실패 시 알림
+      - [X] `launchBrowserAndLoginPage` 함수 내 웹사이트 접속 또는 로그인 오류 발생 시 알림
+      - [X] 기타 예외 발생 시 알림
+  - [X] `src/main.js` 수정
+    - [X] `notificationService.js`의 `sendNotification` 함수 import 및 사용
+    - [X] 메인 `try...catch` 블록에서 오류 발생 시 알림
+  - [X] (선택 사항) `src/scheduler.js` 수정
+    - [X] 공휴일/주말로 인한 작업 건너뛰기 시 알림 고려 (콘솔 로그로 대체)
+    - [X] `exec` 명령어 실행 오류 시 알림
+  - [X] `project.md` 작업 목록 업데이트 (텔레그램 기능 완료)
+  - [X] 텔레그램 연동 기능 커밋
 
 - [X] **다국어 지원 및 로깅/주석 표준화 (영어)**
   - [X] `project.md`: 로깅/주석 영어 사용 규칙 및 텔레그램 메시지 언어 설정 지침 추가
@@ -267,18 +268,7 @@ TELEGRAM_CHAT_ID="your_telegram_chat_id"
 - [X] **GitHub Actions 워크플로우 수정**
   - [X] `main` 브랜치 푸시 시에만 트리거되도록 수정
   - [X] Docker 이미지 태그는 `latest`만 생성하도록 수정
-  - [X] 태그 없는 이전 GHCR 이미지 삭제 단계 추가 (`Chizkiyahu/delete-untagged-ghcr-action` 사용)
-    - [X] `owner_type: user` 파라미터 추가하여 오류 수정
-    - [X] `Chizkiyahu/delete-untagged-ghcr-action` 버전을 `@v3`에서 `@v4.1.0`으로 업데이트하여 오류 수정 시도
-    - [X] `Chizkiyahu/delete-untagged-ghcr-action` 버전을 `@v6`으로 업데이트하여 오류 수정 시도
-      - name: Delete untagged container image versions
-        uses: actions/delete-package-versions@v5
-        with:
-          package-name: ${{{{ github.event.repository.name }}}}
-          owner: ${{{{ github.repository_owner }}}}
-          package-type: 'container'
-          delete-untagged-versions: 'true'
-          token: ${{{{ secrets.GITHUB_TOKEN }}}}
+  - [X] 태그 없는 이전 GHCR 이미지 삭제 단계 추가 (`actions/delete-package-versions@v5` 사용)
   - [X] `project.md` 작업 목록 업데이트
   - [X] GitHub Actions 워크플로우 수정 작업 커밋
 
@@ -289,6 +279,8 @@ TELEGRAM_CHAT_ID="your_telegram_chat_id"
   - [X] `src/jobcan.js`, `src/main.js`, `src/scheduler.js`: `messageLanguage` 참조 경로를 `config.appSettings.messageLanguage`로 변경.
 - [X] **`page.waitForURL` 버그 수정**
   - [X] `src/jobcan.js`의 `launchBrowserAndLoginPage` 함수 내 `page.waitForURL` 호출 시 `url.href.startsWith()`를 사용하도록 수정 (URL 객체의 `href` 속성 사용).
+- [X] **로그 메시지 이모지 교체**
+  - [X] `src/jobcan.js`의 `getMessage` 함수 내 로그 메시지에서 이모지(✅, ℹ️)를 문자열 리터럴(`[SUCCESS]`, `[INFO]`)로 교체.
 - [ ] (신규) `project.md` 업데이트 및 모든 변경사항 커밋/푸시
 
 ## 9. 추가 개선 사항 (선택적)
