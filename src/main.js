@@ -8,7 +8,7 @@ async function main() {
 
   try {
     config = await getConfig(); // Load config early to use for all messages
-    const lang = config.telegram.messageLanguage;
+    const lang = config.appSettings.messageLanguage; // Changed from config.telegram.messageLanguage
 
     const args = process.argv.slice(2);
     const action = args[0]; // e.g., 'checkIn' or 'checkOut'
@@ -71,7 +71,7 @@ async function main() {
     console.error('An error occurred in the main script:', error);
     // Use getMessage for critical error notification
     // Fallback language to 'en' if config or lang is somehow undefined
-    const currentLang = config?.telegram?.messageLanguage || 'en';
+    const currentLang = config?.appSettings?.messageLanguage || 'en'; // Changed from config.telegram.messageLanguage
     const errorMessage = error && typeof error.message === 'string' ? error.message : 'Unknown error occurred';
     // Assuming a new message key 'mainScriptError'
     await sendNotification(getMessage(currentLang, 'mainScriptError', { errorMsg: errorMessage }), true);

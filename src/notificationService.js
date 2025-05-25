@@ -6,34 +6,32 @@ const TelegramBot = require('node-telegram-bot-api');
 
 let bot;
 let chatId;
-// Default environment variable names, can be overridden by config.json
-let botTokenEnvVarName = 'TELEGRAM_BOT_TOKEN';
-let chatIdEnvVarName = 'TELEGRAM_CHAT_ID';
-// Language setting is not directly used by this service, but by the callers.
+// Environment variable names are now hardcoded
+const BOT_TOKEN_ENV_VAR = 'TELEGRAM_BOT_TOKEN';
+const CHAT_ID_ENV_VAR = 'TELEGRAM_CHAT_ID';
 
 /**
  * Initializes the notification service.
  * It reads Telegram bot token and chat ID from environment variables.
- * The names of these environment variables can be specified in the config file.
- * @param {object} config - The application configuration object, typically from config.json.
+ * @param {object} config - The application configuration object (not used for token/chatId env var names anymore).
  */
-function initializeNotificationService(config) {
-  if (config?.telegram) {
-    botTokenEnvVarName = config.telegram.botTokenEnvVar || botTokenEnvVarName;
-    chatIdEnvVarName = config.telegram.chatIdEnvVar || chatIdEnvVarName;
-    // messageLanguage is handled by the caller, not used directly in this service.
-  }
-
-  const token = process.env[botTokenEnvVarName];
-  chatId = process.env[chatIdEnvVarName];
+function initializeNotificationService(config) { // config parameter is kept for future use or consistency
+  const token = process.env[BOT_TOKEN_ENV_VAR];
+  chatId = process.env[CHAT_ID_ENV_VAR];
 
   if (token && chatId) {
     bot = new TelegramBot(token);
-    console.log('Telegram bot initialized.'); // Log in English
+    console.log('Telegram bot initialized successfully.'); // Log in English
+  } else if (!token && !chatId) {
+    console.info('Telegram notifications disabled: TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID are not set in environment variables.'); // Log in English
+    bot = null;
   } else {
-    console.warn('Telegram bot token or chat ID is missing in environment variables. Notifications will be disabled.'); // Log in English
-    if (!token) console.warn(`${botTokenEnvVarName} is not set in environment variables.`); // Log in English
-    if (!chatId) console.warn(`${chatIdEnvVarName} is not set in environment variables.`); // Log in English
+    if (!token) {
+      console.warn(`Telegram notifications disabled: ${BOT_TOKEN_ENV_VAR} is not set in environment variables.`); // Log in English
+    }
+    if (!chatId) {
+      console.warn(`Telegram notifications disabled: ${CHAT_ID_ENV_VAR} is not set in environment variables.`); // Log in English
+    }
     bot = null; // Explicitly set to null
   }
 }

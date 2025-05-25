@@ -93,15 +93,15 @@ async function getConfig() {
     initializeNotificationService(config);
 
     // Ensure messageLanguage is set, default to 'en'
-    if (!config.telegram) config.telegram = {};
-    config.telegram.messageLanguage = config.telegram.messageLanguage || 'en';
+    if (!config.appSettings) config.appSettings = {};
+    config.appSettings.messageLanguage = config.appSettings.messageLanguage || 'en';
 
     configInstance = config;
     return config;
   } catch (error) {
     console.error(`Error reading or parsing config.json or .env file: ${error.message}`);
     // Attempt to send notification in default language (English) as config might be broken
-    const lang = configInstance?.telegram?.messageLanguage || 'en';
+    const lang = configInstance?.appSettings?.messageLanguage || 'en';
     await sendNotification(getMessage(lang, 'configLoadError', { errorMsg: error.message }), true);
     throw error;
   }
@@ -111,7 +111,7 @@ async function launchBrowserAndLoginPage() {
   let browser;
   try {
     const config = await getConfig();
-    const lang = config.telegram.messageLanguage;
+    const lang = config.appSettings.messageLanguage;
     const { loginUrl, attendanceUrl, loginCredentials } = config.jobcan;
     const { emailXPath, passwordXPath, loginButtonXPath } = loginCredentials;
     const { headless } = config.playwright;
@@ -148,7 +148,8 @@ async function launchBrowserAndLoginPage() {
     console.log(`Waiting for navigation to attendance page: ${attendanceUrl} or for 2 minutes...`);
 
     try {
-      await page.waitForURL(url => url.startsWith(attendanceUrl), { timeout: 120000 });
+      // Use url.href as page.waitForURL callback receives a URL object
+      await page.waitForURL(url => url.href.startsWith(attendanceUrl), { timeout: 120000 });
       console.log('Successfully navigated to the attendance page.');
     } catch (error) {
       console.error('Timeout or error while waiting for navigation to attendance page:', error.message);
@@ -159,7 +160,7 @@ async function launchBrowserAndLoginPage() {
 
   } catch (error) {
     console.error('Error in launchBrowserAndLoginPage:', error.message);
-    const lang = configInstance?.telegram?.messageLanguage || 'en'; // Fallback if config failed to load fully
+    const lang = configInstance?.appSettings?.messageLanguage || 'en'; // Fallback if config failed to load fully
     await sendNotification(getMessage(lang, 'browserLaunchError', { errorMsg: error.message }), true);
     if (browser) {
       await browser.close();
@@ -169,7 +170,7 @@ async function launchBrowserAndLoginPage() {
 }
 
 async function getWorkingStatus(page, config) {
-  const lang = config.telegram.messageLanguage;
+  const lang = config.appSettings.messageLanguage;
   try {
     const statusElement = await page.waitForSelector(config.jobcan.workingStatusXPath, { timeout: 10000 });
     const statusText = await statusElement.textContent();
@@ -183,7 +184,7 @@ async function getWorkingStatus(page, config) {
 }
 
 async function clickAttendanceButton(page, config) {
-  const lang = config.telegram.messageLanguage;
+  const lang = config.appSettings.messageLanguage;
   if (config.appSettings.testMode) {
     console.log('[Test Mode] Attendance button click skipped.');
     return true;
@@ -219,7 +220,7 @@ async function clickAttendanceButton(page, config) {
 }
 
 async function checkIn(page, config) {
-  const lang = config.telegram.messageLanguage;
+  const lang = config.appSettings.messageLanguage;
   console.log('Attempting Check-In...');
   const currentStatus = await getWorkingStatus(page, config);
 
@@ -265,7 +266,7 @@ async function checkIn(page, config) {
 }
 
 async function checkOut(page, config) {
-  const lang = config.telegram.messageLanguage;
+  const lang = config.appSettings.messageLanguage;
   console.log('Attempting Check-Out...');
   const currentStatus = await getWorkingStatus(page, config);
 

@@ -66,23 +66,27 @@ jobcan-auto/
   },
   "scheduler": {
     "enabled": true,
-    "checkInCron": "0 8 * * 1-5",
-    "checkOutCron": "0 17 * * 1-5",
+    "delayInMinutes": {
+      "checkIn": 0,
+      "checkOut": 0
+    },
     "timezone": "Asia/Seoul"
   },
   "playwright": {
     "headless": false
   },
   "appSettings": {
-    "testMode": false
+    "testMode": false,
+    "messageLanguage": "en" // 애플리케이션 로케일 (로그, 알림 메시지 언어)
   },
   "calendar": {
     "holidayCalendarUrl": "https://calendar.google.com/calendar/ical/ko.south_korea%23holiday%40group.v.calendar.google.com/public/basic.ics"
   },
   "telegram": {
-    "botTokenEnvVar": "TELEGRAM_BOT_TOKEN",
-    "chatIdEnvVar": "TELEGRAM_CHAT_ID",
-    "messageLanguage": "en"
+    // botTokenEnvVar 및 chatIdEnvVar는 config.json에서 제거됨.
+    // 대신 src/notificationService.js 내에 'TELEGRAM_BOT_TOKEN' 및 'TELEGRAM_CHAT_ID'로 하드코딩됨.
+    // 두 환경 변수 중 하나라도 누락 시 경고 로그 출력 후 텔레그램 알림 비활성화.
+    // 두 환경 변수 모두 누락 시 정보 로그 출력 후 텔레그램 알림 비활성화.
   }
 }
 ```
@@ -277,3 +281,14 @@ TELEGRAM_CHAT_ID="your_telegram_chat_id"
           token: ${{{{ secrets.GITHUB_TOKEN }}}}
   - [X] `project.md` 작업 목록 업데이트
   - [X] GitHub Actions 워크플로우 수정 작업 커밋
+
+- [X] **텔레그램 알림 기능 수정**
+  - [X] `config.json`에서 `telegram.botTokenEnvVar`, `telegram.chatIdEnvVar` 제거. `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` 환경 변수명을 `src/notificationService.js`에 하드코딩.
+  - [X] `config.json`에서 `telegram.messageLanguage`를 `appSettings.messageLanguage`로 이동.
+  - [X] `src/notificationService.js`: 토큰/채팅 ID 누락 시 경고/정보 로그 출력 및 알림 비활성화 로직 구현.
+  - [X] `src/jobcan.js`, `src/main.js`, `src/scheduler.js`: `messageLanguage` 참조 경로를 `config.appSettings.messageLanguage`로 변경.
+- [X] **`page.waitForURL` 버그 수정**
+  - [X] `src/jobcan.js`의 `launchBrowserAndLoginPage` 함수 내 `page.waitForURL` 호출 시 `url.href.startsWith()`를 사용하도록 수정 (URL 객체의 `href` 속성 사용).
+- [ ] (신규) `project.md` 업데이트 및 모든 변경사항 커밋/푸시
+
+## 9. 추가 개선 사항 (선택적)

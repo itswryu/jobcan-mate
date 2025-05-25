@@ -18,22 +18,20 @@
   },
   "scheduler": {
     "enabled": true,
-    "checkInCron": "0 8 * * 1-5",
-    "checkOutCron": "0 17 * * 1-5",
+    "delayInMinutes": {
+      "checkIn": -10,
+      "checkOut": 5
+    },
     "timezone": "Asia/Seoul"
   },
   "playwright": {
     "headless": true
   },
   "appSettings": {
-    "testMode": true
+    "testMode": true,
+    "messageLanguage": "ko"
   },
   "calendar": {
     "holidayCalendarUrl": "https://calendar.google.com/calendar/ical/ko.south_korea%23holiday%40group.v.calendar.google.com/public/basic.ics"
-  },
-  "telegram": {
-    "botTokenEnvVar": "TELEGRAM_BOT_TOKEN",
-    "chatIdEnvVar": "TELEGRAM_CHAT_ID",
-    "messageLanguage": "en"
   }
 }

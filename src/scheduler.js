@@ -13,6 +13,21 @@ const mainScriptPath = path.join(__dirname, 'main.js');
 // This reduces the need to call getConfig separately in runJob or cron job callbacks.
 let appConfig = null;
 
+// Helper function to calculate cron time based on base time, delay, and weekdaysOnly flag
+function calculateCronTime(baseTime, delayMinutes, weekdaysOnly) {
+  const [hours, minutes] = baseTime.split(':').map(Number);
+  const date = new Date();
+  date.setHours(hours);
+  date.setMinutes(minutes + delayMinutes); // Add delay (can be negative)
+
+  const cronMinutes = date.getMinutes();
+  const cronHours = date.getHours();
+  const dayOfWeek = weekdaysOnly ? '1-5' : '*'; // Monday-Friday or Any day
+
+  // Cron format: "minute hour * * dayOfWeek"
+  return `${cronMinutes} ${cronHours} * * ${dayOfWeek}`;
+}
+
 async function runJob(action) {
   // Ensure appConfig is loaded, though it should be by startScheduler
   if (!appConfig) {
@@ -26,7 +41,7 @@ async function runJob(action) {
       return;
     }
   }
-  const lang = appConfig.telegram.messageLanguage;
+  const lang = appConfig.appSettings.messageLanguage; // Changed from appConfig.telegram.messageLanguage
 
   console.log(`[${new Date().toISOString()}] Running ${action} job...`);
   exec(`node ${mainScriptPath} ${action}`, async (error, stdout, stderr) => {
@@ -52,7 +67,7 @@ async function runJob(action) {
 async function startScheduler() {
   try {
     appConfig = await getConfig(); // Load config and initialize notificationService via getConfig
-    const lang = appConfig.telegram.messageLanguage;
+    const lang = appConfig.appSettings.messageLanguage; // Changed from appConfig.telegram.messageLanguage
 
     const { scheduler, workHours, calendar } = appConfig;
 
@@ -61,7 +76,21 @@ async function startScheduler() {
       return;
     }
 
-    const { checkInCron, checkOutCron, timezone } = scheduler;
+    const { timezone, delayInMinutes } = scheduler;
+    const { checkInTime, checkOutTime, weekdaysOnly } = workHours;
+
+    if (!checkInTime || !checkOutTime) {
+      const message = 'Check-in or Check-out time is not defined in workHours config.';
+      console.error(message);
+      await sendNotification(getMessage(lang, 'schedulerConfigError', { errorMsg: message }), true);
+      return;
+    }
+
+    const checkInDelay = delayInMinutes?.checkIn || 0;
+    const checkOutDelay = delayInMinutes?.checkOut || 0;
+
+    const checkInCron = calculateCronTime(checkInTime, checkInDelay, weekdaysOnly);
+    const checkOutCron = calculateCronTime(checkOutTime, checkOutDelay, weekdaysOnly);
 
     if (!cron.validate(checkInCron)) {
       const message = `Invalid cron expression for check-in: ${checkInCron}`;
@@ -83,9 +112,9 @@ async function startScheduler() {
     cron.schedule(checkInCron, async () => {
       const today = new Date();
       const dateString = today.toISOString();
-      console.log(`[${dateString}] Scheduled check-in: ${checkInCron}`);
+      console.log(`[${dateString}] Scheduled check-in: ${checkInCron} (Base: ${checkInTime}, Delay: ${checkInDelay}m)`);
 
-      if (workHours?.weekdaysOnly && (today.getDay() === 0 || today.getDay() === 6)) {
+      if (weekdaysOnly && (today.getDay() === 0 || today.getDay() === 6)) {
         const message = 'Today is a weekend. Skipping check-in job.';
         console.log(`[${dateString}] ${message}`);
         // Weekend skip notification is deemed sufficient by log.
@@ -107,9 +136,9 @@ async function startScheduler() {
     cron.schedule(checkOutCron, async () => {
       const today = new Date();
       const dateString = today.toISOString();
-      console.log(`[${dateString}] Scheduled check-out: ${checkOutCron}`);
+      console.log(`[${dateString}] Scheduled check-out: ${checkOutCron} (Base: ${checkOutTime}, Delay: ${checkOutDelay}m)`);
 
-      if (workHours?.weekdaysOnly && (today.getDay() === 0 || today.getDay() === 6)) {
+      if (weekdaysOnly && (today.getDay() === 0 || today.getDay() === 6)) {
         const message = 'Today is a weekend. Skipping check-out job.';
         console.log(`[${dateString}] ${message}`);
         // Weekend skip notification is deemed sufficient by log.
@@ -134,7 +163,7 @@ async function startScheduler() {
     // If getConfig() fails, appConfig might be null, and notificationService might not be initialized.
     // sendNotification will internally log a warning and not send if service is uninitialized.
     // Fallback language to 'en' if config or lang is somehow undefined before this point.
-    const currentLang = appConfig?.telegram?.messageLanguage || 'en';
+    const currentLang = appConfig?.appSettings?.messageLanguage || 'en'; // Changed from appConfig.telegram.messageLanguage
     await sendNotification(getMessage(currentLang, 'schedulerStartError', { errorMsg: errorMessage }), true);
   }
 }
