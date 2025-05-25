@@ -143,6 +143,70 @@ jobcan-auto/
     ```
     `ConfigMap` (`jobcan-mate-config`)은 `config.json` 파일을 관리하며, `deployment.yaml`에 함께 정의되어 있습니다.
 
+## GitHub Actions 워크플로우
+
+이 프로젝트는 GitHub Actions를 사용하여 CI/CD 파이프라인을 자동화합니다. 워크플로우는 다음 작업을 수행합니다:
+
+* **트리거**: `main` 브랜치에 코드가 푸시될 때 자동으로 실행됩니다. 수동으로 워크플로우를 실행할 수도 있습니다.
+* **멀티 아키텍처 Docker 이미지 빌드**: `linux/amd64` 및 `linux/arm64` 아키텍처를 모두 지원하는 Docker 이미지를 빌드합니다.
+* **GHCR (GitHub Container Registry) 푸시**: 빌드된 이미지를 GitHub Container Registry에 `ghcr.io/<소유자>/jobcan-mate:latest` 태그로 푸시합니다. (현재 워크플로우는 `itswryu` 소유자를 기준으로 설정되어 있습니다. 실제 사용 시 `<소유자>` 부분을 자신의 GitHub 사용자명 또는 조직명으로 변경해야 합니다.)
+* **이미지 메타데이터**: 이미지에는 OCI 표준 레이블을 사용하여 소스, 버전, 설명 등의 메타데이터가 포함됩니다.
+* **이전 버전 정리**: `latest` 태그가 지정되지 않은 이전 버전의 컨테이너 이미지는 자동으로 삭제되어 GHCR 저장 공간을 효율적으로 관리합니다.
+
+### GHCR에서 이미지 사용하기
+
+빌드된 Docker 이미지는 다음 명령어를 사용하여 가져올 수 있습니다:
+
+```bash
+docker pull ghcr.io/itswryu/jobcan-mate:latest
+```
+
+(실제 사용 시 `itswryu` 부분을 자신의 GitHub 사용자명 또는 조직명으로 변경해야 합니다.)
+
+## 문제 해결 (Troubleshooting)
+
+다음은 Jobcan Mate 사용 중 발생할 수 있는 일반적인 문제와 해결 방법입니다.
+
+* **Jobcan 사이트 변경으로 인한 오류**:
+  * **증상**: "로그인 버튼을 찾을 수 없습니다", "출근/퇴근 버튼을 찾을 수 없습니다" 등의 오류 메시지와 함께 프로그램이 비정상 종료됩니다.
+  * **원인**: Jobcan 웹사이트의 HTML 구조가 변경되어 `config.json`에 정의된 XPath 선택자가 더 이상 유효하지 않을 수 있습니다.
+  * **해결 방법**:
+    1. 브라우저 개발자 도구를 사용하여 변경된 요소의 정확한 XPath를 확인합니다.
+    2. `config.json` 파일의 `jobcan.loginCredentials` 및 `jobcan.attendanceButtonXPath`, `jobcan.workingStatusXPath` 등의 값을 새 XPath로 업데이트합니다.
+
+* **환경 변수 설정 오류**:
+  * **증상**: "Jobcan 이메일/비밀번호가 설정되지 않았습니다", "Telegram 봇 토큰/채팅 ID가 설정되지 않았습니다" 등의 오류 메시지가 표시됩니다.
+  * **원인**: `.env` 파일이 없거나, 필요한 환경 변수가 누락되었거나, 잘못된 값이 설정되었습니다.
+  * **해결 방법**:
+    1. 프로젝트 루트에 `.env` 파일이 있는지 확인합니다. 없다면 `.env.sample` 파일을 복사하여 생성합니다.
+    2. `.env` 파일에 `JOBCAN_EMAIL`, `JOBCAN_PASSWORD` (필수) 및 `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` (Telegram 알림 사용 시) 등의 변수가 올바르게 설정되었는지 확인합니다.
+
+* **캘린더 연동 문제 (공휴일/연차)**:
+  * **증상**: 공휴일 또는 연차임에도 불구하고 출퇴근 기록이 시도되거나, 반대로 정상 근무일임에도 건너뜁니다.
+  * **원인**:
+    * `config.json`의 `calendar.holidayCalendarUrl` (공휴일 ICS) 또는 `.env`의 `ANNUAL_LEAVE_CALENDAR_URL` (개인 연차 ICS) 주소가 잘못되었거나 접근할 수 없습니다.
+    * 개인 캘린더의 연차 이벤트 이름이 `config.json`의 `calendar.annualLeaveKeyword`와 일치하지 않습니다.
+  * **해결 방법**:
+    1. ICS URL이 올바른지, 공개적으로 접근 가능한지 확인합니다.
+    2. 개인 캘린더에 등록된 연차 이벤트의 제목이 `annualLeaveKeyword`와 정확히 일치하는지 확인합니다. (예: "연차", "Annual Leave")
+
+* **Kubernetes 배포 문제**:
+  * **증상**: Pod가 정상적으로 실행되지 않거나, 로그에 오류가 표시됩니다.
+  * **원인**: `Secret` 또는 `ConfigMap` 설정 오류, 이미지 경로 오류, 리소스 부족 등 다양합니다.
+  * **해결 방법**:
+    1. `kubectl describe pod <pod-name> -n <namespace>` 명령으로 Pod의 상태와 이벤트를 확인합니다.
+    2. `kubectl logs <pod-name> -n <namespace>` 명령으로 컨테이너 로그를 확인하여 구체적인 오류 메시지를 파악합니다.
+    3. `jobcan-mate-secret`이 올바르게 생성되었고, `deployment.yaml`에서 참조하는 이미지 경로가 정확한지 확인합니다.
+    4. `jobcan-mate-config` (`ConfigMap`)의 내용이 로컬 `config.json`과 동기화되어 있는지 확인합니다.
+
+* **로그 확인**:
+  * **로컬 실행 시**: 콘솔에 직접 로그가 출력됩니다.
+  * **Docker 실행 시**: `docker logs <container-name>` 명령으로 컨테이너 로그를 확인할 수 있습니다.
+  * **Kubernetes 실행 시**: `kubectl logs <pod-name> -n <namespace>` 명령으로 컨테이너 로그를 확인할 수 있습니다.
+  * `config.json`의 `appSettings.testMode`를 `true`로 설정하면 실제 웹 자동화 동작 없이 상세한 로그만 기록하여 디버깅에 도움이 될 수 있습니다.
+
+문제가 지속되거나 여기에 언급되지 않은 다른 문제가 발생하면, GitHub 이슈를 통해 문의해주세요.
+
 ## 라이선스
 
 MIT License
