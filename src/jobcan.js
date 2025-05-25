@@ -59,7 +59,7 @@ function getMessage(lang, key, params = {}) {
       checkInAlreadyDone: `[INFO] 이미 출근한 상태입니다 (${params.status}).`,
       checkInInvalidStatus: `[경고] 출근할 수 없습니다. 현재 상태: "${params.status}", 예상 상태: "${params.expectedStatus}".`,
       checkOutProcessError: '[오류] 퇴근 처리 실패: 현재 근무 상태를 확인할 수 없습니다.',
-      checkOutClickError: '[오류] 퇴근 처리 실패: 퇴근 버튼 클릭에 실패했습니다.',
+      checkOutClickError: '[오류] 퇴근 버튼 클릭에 실패했습니다.',
       checkOutSuccess: `[SUCCESS] Jobcan 퇴근 처리가 완료되었습니다. 현재 상태: ${params.status}`,
       checkOutWarning: `[주의] 퇴근 처리가 실패했거나 상태 변경이 확인되지 않았습니다. 현재 상태: "${params.newStatus}", 예상 상태: "${params.expectedStatus}" 또는 "${params.altExpectedStatus}".`,
       checkOutAlreadyDone: `[INFO] 이미 퇴근했거나 출근하지 않은 상태입니다. 현재 상태: "${params.status}".`,
@@ -94,6 +94,19 @@ async function getConfig() {
       dotenv.config({ path: envPath });
     } else {
       console.warn(getMessage('en', 'envNotFound', { envPath }));
+    }
+
+    // Initialize calendar object if it doesn't exist
+    if (!config.calendar) {
+      config.calendar = {};
+    }
+    // Read ANNUAL_LEAVE_CALENDAR_URL from environment variable
+    const annualLeaveCalendarUrlFromEnv = process.env.ANNUAL_LEAVE_CALENDAR_URL;
+    if (annualLeaveCalendarUrlFromEnv) {
+      config.calendar.annualLeaveCalendarUrl = annualLeaveCalendarUrlFromEnv;
+      console.log(`[INFO] Annual leave calendar URL loaded from environment variable: ${annualLeaveCalendarUrlFromEnv}`);
+    } else if (!config.calendar.annualLeaveCalendarUrl) { // Only log if not in env AND not in config (it should be removed from config)
+      console.log('[INFO] ANNUAL_LEAVE_CALENDAR_URL environment variable not set and no fallback in config.json. Annual leave checking will be skipped.');
     }
 
     initializeNotificationService(config);

@@ -33,7 +33,6 @@
   },
   "calendar": {
     "holidayCalendarUrl": "https://calendar.google.com/calendar/ical/ko.south_korea%23holiday%40group.v.calendar.google.com/public/basic.ics",
-    "annualLeaveCalendarUrl": "https://calendar.google.com/calendar/ical/bd96e131d771ab5cf406a8ee71e192c244073a55aa1a866c9cb853a89f497e74%40group.calendar.google.com/private-63e145cc6c3514b05addf69c791bd57d/basic.ics",
     "annualLeaveKeyword": "연차"
   }
 }
