@@ -244,3 +244,18 @@ TELEGRAM_CHAT_ID="your_telegram_chat_id"
     - [X] 주석 및 로그 영어로 변경
   - [X] `project.md` 작업 목록 업데이트 (다국어 지원 및 표준화 완료)
   - [X] 다국어 지원 및 표준화 기능 커밋
+
+- [X] **Playwright 로케일 설정을 'ko-KR'로 지정**
+  - [X] `config.json`의 `playwright` 섹션에 `locale: "ko-KR"` 추가
+  - [X] `src/jobcan.js`의 `launchBrowserAndLoginPage` 함수에서 `browser.newContext()` 호출 시 `locale` 설정 적용
+  - [X] `project.md` 작업 목록 업데이트
+  - [X] Playwright 로케일 설정 기능 커밋
+
+- [X] **Git 저장소에서 `node_modules` 폴더 완전 제거**
+  - [X] `git filter-repo` 도구 설치 확인 (Windows의 경우 Git Bash 또는 WSL 환경에서 실행 필요할 수 있음)
+  - [X] 명령어 실행: `git filter-repo --path node_modules --invert-paths --force` (필요시 전체 경로 사용)
+  - [X] 원격 저장소 재연결: `git remote add origin https://github.com/itswryu/jobcan-mate.git` (필요한 경우)
+  - [X] 변경된 히스토리 강제 푸시: `git push --force origin --all`
+  - [X] (선택 사항) 로컬 저장소 정리: `git reflog expire --expire=now --all && git gc --prune=now --aggressive`
+  - [X] `project.md` 작업 목록 업데이트
+  - [X] `node_modules` 완전 제거 작업 커밋
