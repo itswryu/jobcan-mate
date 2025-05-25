@@ -167,15 +167,15 @@ ANNUAL_LEAVE_CALENDAR_URL="your_annual_leave_calendar_ics_url"
   - [x] 이미지 태그는 `latest`로만 지정
   - [x] 태그 없는 이전 이미지 자동 삭제 ( `actions/delete-package-versions@v5` 사용)
 - [x] Kubernetes 배포를 위한 YAML 파일 생성 (`kubernetes/deployment.yaml`)
-  - [ ] `ConfigMap` 및 `Secret` 정의 (사용자 수동 작업 필요)
+  - [ ] `ConfigMap` 및 `Secret` 정의 (사용자 수동 작업 필요 - 아래 "10. Kubernetes 배포" 섹션 참고)
 - [x] `node_modules` Git 히스토리에서 제거
 - [x] `project.md` 업데이트 (개발 가이드라인, 설정 정보, 작업 목록 등)
   - [x] `config.json`의 `telegram.messageLanguage`를 `appSettings.messageLanguage`로 이동
   - [x] `config.json`의 `telegram.botTokenEnvVar`, `telegram.chatIdEnvVar` 제거 명시
   - [x] `config.json`의 `calendar.annualLeaveCalendarUrl` 제거 및 환경 변수 사용 명시
   - [x] `.env` 파일 예시에 `ANNUAL_LEAVE_CALENDAR_URL` 추가
-- [ ] 최종 테스트 및 버그 수정
-- [ ] 사용자 문서화 (README.md 또는 `project.md` 내 상세화)
+- [ ] **최종 테스트 및 버그 수정**
+- [ ] **사용자 문서화 (README.md 또는 `project.md` 내 상세화)**
 
 ## 8. 실행 방법
 
@@ -242,7 +242,7 @@ ANNUAL_LEAVE_CALENDAR_URL="your_annual_leave_calendar_ics_url"
 ## 10. Kubernetes 배포
 
 `kubernetes/deployment.yaml` 파일은 기본적인 `Deployment` 정의를 포함하고 있습니다.
-실제 배포 시에는 다음 사항들을 고려하여 수정해야 합니다:
+**실제 배포 시에는 다음 사항들을 사용자가 직접 수정해야 합니다:**
 
 - **이미지 경로**: `spec.template.spec.containers[0].image`를 GHCR에 푸시된 실제 이미지 경로로 변경해야 합니다 (예: `ghcr.io/itswryu/jobcan-mate:latest`).
 - **환경 변수**: Jobcan 로그인 정보, Telegram 토큰/ID, 연차 캘린더 URL 등 민감한 정보는 Kubernetes `Secret`을 통해 주입해야 합니다. `deployment.yaml`의 `env` 섹션을 `valueFrom.secretKeyRef`를 사용하도록 수정합니다.
@@ -288,9 +288,14 @@ kubectl create configmap jobcan-config --from-file=config.json=./jobcan-configma
 
 이후 `deployment.yaml`에서 이 `Secret`과 `ConfigMap`을 참조하도록 수정합니다.
 
-## 11. 커밋 및 푸시
+## 11. 다음 단계 및 사용자 확인 사항
 
-모든 변경 사항을 커밋하고 원격 저장소에 푸시합니다.
+- **GHCR 이미지 삭제 액션 확인**: GitHub Actions 워크플로(`.github/workflows/docker-publish.yml`)에 포함된 `actions/delete-package-versions@v5` 액션이 태그 없는 이전 GHCR 이미지를 정상적으로 삭제하는지 확인이 필요합니다.
+- **Kubernetes 배포**: 위 "10. Kubernetes 배포" 섹션의 안내에 따라 `kubernetes/deployment.yaml` 파일을 수정하고, 실제 Kubernetes 클러스터에 배포하여 정상 동작을 확인해야 합니다.
+- **최종 기능 테스트**: 모든 기능이 의도한 대로 동작하는지 종합적인 테스트가 필요합니다.
+- **문서화 검토 및 보완**: 현재 `project.md`의 내용을 바탕으로 사용자가 프로젝트를 이해하고 사용하는 데 필요한 정보가 충분한지 검토하고, 필요시 `README.md`를 생성하거나 본 문서를 보완합니다.
+
+## 12. 최근 커밋
 
 ```bash
 git add .

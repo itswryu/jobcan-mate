@@ -39,25 +39,14 @@ data:
         "holidayCalendarUrl": "https://calendar.google.com/calendar/ical/ko.south_korea%23holiday%40group.v.calendar.google.com/public/basic.ics"
       },
       "telegram": {
-        "botTokenEnvVar": "TELEGRAM_BOT_TOKEN",
-        "chatIdEnvVar": "TELEGRAM_CHAT_ID",
         "messageLanguage": "en"
       }
     }
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: jobcan-mate-secret
-  namespace: default # Or your target namespace
-type: Opaque
-stringData: # Changed from data to stringData
-  # Replace these with your actual sensitive values.
-  # Kubernetes will automatically base64 encode these.
-  JOBCAN_EMAIL: "your_email@example.com" # Replace with your Jobcan email
-  JOBCAN_PASSWORD: "your_jobcan_password"   # Replace with your Jobcan password
-  TELEGRAM_BOT_TOKEN: "YOUR_TELEGRAM_BOT_TOKEN" # Replace with your Telegram Bot Token
-  TELEGRAM_CHAT_ID: "YOUR_TELEGRAM_CHAT_ID"     # Replace with your Telegram Chat ID
+# IMPORTANT: Create the Secret manually using your actual .env file.
+# The .env file itself will be stored as a key in the Secret.
+# Example command (replace with your actual .env file path and namespace):
+# kubectl create secret generic jobcan-mate-secret --from-file=.env=./.env -n default
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -78,42 +67,22 @@ spec:
     spec:
       containers:
       - name: jobcan-mate
-        # Replace with your actual GHCR image path after pushing
-        # e.g., ghcr.io/itswryu/jobcan-mate:latest or ghcr.io/itswryu/jobcan-mate:sha-xxxxxxx
         image: ghcr.io/itswryu/jobcan-mate:latest # Ensure this matches your GHCR image path
         imagePullPolicy: Always # Or IfNotPresent, depending on your update strategy
         ports:
         - containerPort: 80 # Though this app doesn't expose a port, it's good practice if it did
-        env:
-        - name: JOBCAN_EMAIL
-          valueFrom:
-            secretKeyRef:
-              name: jobcan-mate-secret
-              key: JOBCAN_EMAIL
-        - name: JOBCAN_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: jobcan-mate-secret
-              key: JOBCAN_PASSWORD
-        - name: TELEGRAM_BOT_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: jobcan-mate-secret
-              key: TELEGRAM_BOT_TOKEN
-        - name: TELEGRAM_CHAT_ID
-          valueFrom:
-            secretKeyRef:
-              name: jobcan-mate-secret
-              key: TELEGRAM_CHAT_ID
-        # The application reads config from /usr/src/app/config.json by default
-        # This volumeMount ensures the ConfigMap data is placed there.
         volumeMounts:
         - name: config-volume
           mountPath: /usr/src/app/config.json
           subPath: config.json # Mounts the 'config.json' key from the ConfigMap
+        - name: env-volume # Mount for the .env file
+          mountPath: /usr/src/app/.env # Path where the .env file will be available in the container
+          subPath: .env # The key in the Secret that holds the .env file content (created via --from-file=.env=...)
       volumes:
       - name: config-volume
         configMap:
           name: jobcan-mate-config
-      # Optional: Add restartPolicy, nodeSelector, resources, etc. as needed
+      - name: env-volume # Volume for the .env file from Secret
+        secret:
+          secretName: jobcan-mate-secret # Name of the Secret you created
       restartPolicy: Always
