@@ -190,7 +190,7 @@ TELEGRAM_CHAT_ID="your_telegram_chat_id"
 - [X] `node-cron`을 사용한 스케줄링 기능 구현 (설정 파일의 cron 표현식 및 시간대 기반) (`scheduler.js`)
 - [X] 헤드리스/포그라운드 실행 모드 전환 기능 구현 (`config.json`의 `playwright.headless` 설정)
 - [X] 간단한 로그 기록 기능 구현 (콘솔 출력)
-- [X] README.md (또는 `project.md`에 통합)에 사용 방법 상세 기술
+- [X] README.md (또는 `project.md`에 사용 방법 상세 기술
 - [X] `main.js`에서 인자 없이 실행 시 도움말 또는 기본 정보 출력 기능 (선택 사항)
 - [X] `node-ical` 라이브러리 설치 (`npm install node-ical`)
 - [X] `config.json`에 공휴일 ICS URL 필드 추가 (`calendar.holidayCalendarUrl`)
@@ -265,5 +265,6 @@ TELEGRAM_CHAT_ID="your_telegram_chat_id"
   - [X] Docker 이미지 태그는 `latest`만 생성하도록 수정
   - [X] 태그 없는 이전 GHCR 이미지 삭제 단계 추가 (`Chizkiyahu/delete-untagged-ghcr-action` 사용)
     - [X] `owner_type: user` 파라미터 추가하여 오류 수정
+    - [X] `Chizkiyahu/delete-untagged-ghcr-action` 버전을 `@v3`에서 `@v4.1.0`으로 업데이트하여 오류 수정 시도
   - [X] `project.md` 작업 목록 업데이트
   - [X] GitHub Actions 워크플로우 수정 작업 커밋
