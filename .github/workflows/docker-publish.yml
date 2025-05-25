@@ -36,6 +36,15 @@ jobs:
         images: ghcr.io/${{ github.repository_owner }}/jobcan-mate
         tags: |
           type=raw,value=latest,enable={{is_default_branch}}
+        labels: |
+          org.opencontainers.image.description=Automates Jobcan clock-in/out. Supports multi-arch (amd64, arm64), holiday detection, and Telegram notifications.
+          org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          org.opencontainers.image.version=${{ github.sha }}
+          org.opencontainers.image.revision=${{ github.sha }}
+          org.opencontainers.image.vendor=${{ github.repository_owner }}
+          org.opencontainers.image.licenses=MIT
+          org.opencontainers.image.title=Jobcan Mate
+          org.opencontainers.image.created=${{ steps.meta.outputs.createdAt }}
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5

@@ -1,6 +1,9 @@
 # Use an official Node.js runtime as a parent image (choose a specific LTS version)
 FROM node:20-slim
 
+# Add image metadata
+LABEL org.opencontainers.image.description="Automates Jobcan clock-in/out operations. Supports multi-architecture (amd64, arm64), holiday detection via ICS calendar, and Telegram notifications."
+
 # Set the working directory in the container
 WORKDIR /usr/src/app
 
