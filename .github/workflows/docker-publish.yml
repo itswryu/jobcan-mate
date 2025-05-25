@@ -59,6 +59,7 @@ jobs:
       uses: actions/delete-package-versions@v5
       with:
         package-name: ${{ github.event.repository.name }}
-        owner: ${{ github.repository_owner }}
         package-type: 'container'
+        min-versions-to-keep: 1
+        ignore-versions: /latest/
         token: ${{ secrets.GITHUB_TOKEN }}
