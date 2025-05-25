@@ -267,5 +267,13 @@ TELEGRAM_CHAT_ID="your_telegram_chat_id"
     - [X] `owner_type: user` 파라미터 추가하여 오류 수정
     - [X] `Chizkiyahu/delete-untagged-ghcr-action` 버전을 `@v3`에서 `@v4.1.0`으로 업데이트하여 오류 수정 시도
     - [X] `Chizkiyahu/delete-untagged-ghcr-action` 버전을 `@v6`으로 업데이트하여 오류 수정 시도
+      - name: Delete untagged container image versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{{{ github.event.repository.name }}}}
+          owner: ${{{{ github.repository_owner }}}}
+          package-type: 'container'
+          delete-untagged-versions: 'true'
+          token: ${{{{ secrets.GITHUB_TOKEN }}}}
   - [X] `project.md` 작업 목록 업데이트
   - [X] GitHub Actions 워크플로우 수정 작업 커밋

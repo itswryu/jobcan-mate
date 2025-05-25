@@ -39,12 +39,11 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
-    - name: Delete untagged images
-      uses: Chizkiyahu/delete-untagged-ghcr-action@v6
+    - name: Delete untagged container image versions
+      uses: actions/delete-package-versions@v5
       with:
+        package-name: ${{ github.event.repository.name }}
+        owner: ${{ github.repository_owner }}
+        package-type: 'container'
+        delete-untagged-versions: 'true'
         token: ${{ secrets.GITHUB_TOKEN }}
-        repository_owner: ${{ github.repository_owner }}
-        repository: jobcan-mate
-        owner_type: user # Explicitly set owner_type to user
-        # package_name: jobcan-mate # 패키지 이름이 레포지토리 이름과 동일하면 생략 가능
-        # untagged_older_than: 0 # 즉시 삭제 (일 단위)
