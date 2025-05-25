@@ -81,7 +81,9 @@ jobcan-auto/
     "messageLanguage": "en" // 애플리케이션 로케일 (로그, 알림 메시지 언어)
   },
   "calendar": {
-    "holidayCalendarUrl": "https://calendar.google.com/calendar/ical/ko.south_korea%23holiday%40group.v.calendar.google.com/public/basic.ics"
+    "holidayCalendarUrl": "https://calendar.google.com/calendar/ical/ko.south_korea%23holiday%40group.v.calendar.google.com/public/basic.ics",
+    "annualLeaveCalendarUrl": "YOUR_ANNUAL_LEAVE_CALENDAR_ICS_URL_HERE", // 연차 캘린더 ICS URL
+    "annualLeaveKeyword": "연차" // 연차 판단을 위한 키워드
   },
   "telegram": {
     // botTokenEnvVar 및 chatIdEnvVar는 config.json에서 제거됨.
@@ -281,6 +283,17 @@ TELEGRAM_CHAT_ID="your_telegram_chat_id"
   - [X] `src/jobcan.js`의 `launchBrowserAndLoginPage` 함수 내 `page.waitForURL` 호출 시 `url.href.startsWith()`를 사용하도록 수정 (URL 객체의 `href` 속성 사용).
 - [X] **로그 메시지 이모지 교체**
   - [X] `src/jobcan.js`의 `getMessage` 함수 내 로그 메시지에서 이모지(✅, ℹ️)를 문자열 리터럴(`[SUCCESS]`, `[INFO]`)로 교체.
+- [X] **연차 캘린더 기능 추가**
+  - [X] `config.json`에 `annualLeaveCalendarUrl` 및 `annualLeaveKeyword` 설정 추가
+  - [X] `src/calendarService.js` 수정:
+    - [X] `isTodayAnnualLeave` 함수 추가 (연차 확인 로직)
+    - [X] `isTodayHoliday`를 `isTodayPublicHoliday`로 변경
+    - [X] `checkIfTodayIsOffDay` 함수 추가 (연차 우선 적용, 공휴일 확인)
+      - [X] `annualLeaveCalendarUrl`이 비어있을 경우 연차 확인 건너뛰고 공휴일만 확인하도록 수정
+    - [X] `module.exports` 업데이트
+  - [X] `src/scheduler.js` 수정:
+    - [X] `checkIfTodayIsOffDay`를 사용하여 연차/공휴일 확인
+  - [X] `src/jobcan.js`의 `getMessage` 함수에 연차/공휴일 관련 새 메시지 키 및 번역 추가
 - [ ] (신규) `project.md` 업데이트 및 모든 변경사항 커밋/푸시
 
 ## 9. 추가 개선 사항 (선택적)

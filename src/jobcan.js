@@ -38,6 +38,9 @@ function getMessage(lang, key, params = {}) {
       schedulerExecStdErr: `[WARNING] Stderr during scheduled ${params.action} job: ${params.stderrMsg}`,
       schedulerInvalidCron: `[ERROR] Invalid cron expression for ${params.type}: ${params.cronExpr}`,
       schedulerStartError: `[CRITICAL] Error starting scheduler: ${params.errorMsg}`,
+      schedulerSkipAnnualLeave: `Today is an annual leave day (${params.holidayName}). Skipping job.`,
+      schedulerSkipPublicHoliday: `Today is a public holiday (${params.holidayName}). Skipping job.`,
+      schedulerSkipReason: `Skipping job: ${params.reason}`,
     },
     ko: {
       configLoadError: `[오류] 설정 파일(config.json 또는 .env) 로드 실패: ${params.errorMsg}`,
@@ -67,6 +70,9 @@ function getMessage(lang, key, params = {}) {
       schedulerExecStdErr: `[경고] 스케줄된 ${params.action} 작업 실행 중 표준 오류 발생: ${params.stderrMsg}`,
       schedulerInvalidCron: `[오류] 잘못된 ${params.type} 크론 표현식: ${params.cronExpr}`,
       schedulerStartError: `[CRITICAL] 스케줄러 시작 중 오류 발생: ${params.errorMsg}`,
+      schedulerSkipAnnualLeave: `오늘은 연차입니다 (${params.holidayName}). 작업을 건너뜁니다.`,
+      schedulerSkipPublicHoliday: `오늘은 공휴일입니다 (${params.holidayName}). 작업을 건너뜁니다.`,
+      schedulerSkipReason: `작업 건너뛰기: ${params.reason}`,
     }
   };
   return messages[lang]?.[key] || messages.en[key] || `Missing message for key: ${key}`;
@@ -302,7 +308,7 @@ async function checkOut(page, config) {
   } else if (currentStatus === STATUS_RESTING_KO || currentStatus === STATUS_NOT_CHECKED_IN_KO) {
     const params = { status: currentStatus };
     console.log(getMessage('en', 'checkOutAlreadyDone', params)); // Log in English
-    // await sendNotification(getMessage(lang, 'checkOutAlreadyDone', params)); // Optional: notify if already checked out
+    await sendNotification(getMessage(lang, 'checkOutAlreadyDone', params)); // Optional: notify if already checked out
     return true;
   } else {
     const params = { status: currentStatus, expectedStatus: STATUS_WORKING_KO };

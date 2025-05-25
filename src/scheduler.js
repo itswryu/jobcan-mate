@@ -4,7 +4,7 @@ const path = require('path');
 // getConfig also initializes notificationService, so sendNotification can be used directly here.
 // getMessage is now also exported from jobcan.js
 const { getConfig, getMessage } = require('./jobcan');
-const { isTodayHoliday } = require('./calendarService');
+const { checkIfTodayIsOffDay } = require('./calendarService'); // Updated to use checkIfTodayIsOffDay
 const { sendNotification } = require('./notificationService'); // sendNotification is already initialized by getConfig
 
 const mainScriptPath = path.join(__dirname, 'main.js');
@@ -120,11 +120,20 @@ async function startScheduler() {
         // Weekend skip notification is deemed sufficient by log.
         return;
       }
-      const holidayInfo = await isTodayHoliday(calendar?.holidayCalendarUrl);
-      if (holidayInfo) {
-        const message = `Today is a public holiday (${holidayInfo}). Skipping check-in job.`;
+
+      // Use checkIfTodayIsOffDay instead of isTodayHoliday
+      const offDayInfo = await checkIfTodayIsOffDay(calendar);
+      if (offDayInfo) {
+        let reason = '';
+        if (offDayInfo.type === 'annualLeave') {
+          reason = getMessage(lang, 'schedulerSkipAnnualLeave', { holidayName: offDayInfo.name });
+        } else if (offDayInfo.type === 'publicHoliday') {
+          reason = getMessage(lang, 'schedulerSkipPublicHoliday', { holidayName: offDayInfo.name });
+        }
+        const message = getMessage(lang, 'schedulerSkipReason', { reason });
         console.log(`[${dateString}] ${message}`);
-        // Holiday skip notification is deemed sufficient by log.
+        // Consider sending a notification for skipped job due to off-day
+        // await sendNotification(message, false); // Example: false for non-critical
         return;
       }
       runJob('checkIn');
@@ -144,11 +153,20 @@ async function startScheduler() {
         // Weekend skip notification is deemed sufficient by log.
         return;
       }
-      const holidayInfo = await isTodayHoliday(calendar?.holidayCalendarUrl);
-      if (holidayInfo) {
-        const message = `Today is a public holiday (${holidayInfo}). Skipping check-out job.`;
+
+      // Use checkIfTodayIsOffDay instead of isTodayHoliday
+      const offDayInfo = await checkIfTodayIsOffDay(calendar);
+      if (offDayInfo) {
+        let reason = '';
+        if (offDayInfo.type === 'annualLeave') {
+          reason = getMessage(lang, 'schedulerSkipAnnualLeave', { holidayName: offDayInfo.name });
+        } else if (offDayInfo.type === 'publicHoliday') {
+          reason = getMessage(lang, 'schedulerSkipPublicHoliday', { holidayName: offDayInfo.name });
+        }
+        const message = getMessage(lang, 'schedulerSkipReason', { reason });
         console.log(`[${dateString}] ${message}`);
-        // Holiday skip notification is deemed sufficient by log.
+        // Consider sending a notification for skipped job due to off-day
+        // await sendNotification(message, false);
         return;
       }
       runJob('checkOut');

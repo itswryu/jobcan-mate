@@ -45,5 +45,4 @@ jobs:
         package-name: ${{ github.event.repository.name }}
         owner: ${{ github.repository_owner }}
         package-type: 'container'
-        delete-untagged-versions: 'true'
         token: ${{ secrets.GITHUB_TOKEN }}
