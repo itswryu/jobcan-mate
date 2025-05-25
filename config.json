@@ -28,7 +28,7 @@
     "headless": true
   },
   "appSettings": {
-    "testMode": true,
+    "testMode": false,
     "messageLanguage": "ko"
   },
   "calendar": {
