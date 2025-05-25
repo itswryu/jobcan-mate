@@ -2,12 +2,11 @@ name: Docker Image CI for Jobcan Mate
 
 on:
   push:
-    branches: [ "main" ] # Or your default branch
-  # Allows you to run this workflow manually from the Actions tab
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
-  build-and-push-ghcr:
+  build-push-and-cleanup-ghcr:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -28,9 +27,8 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/${{ github.repository_owner }}/jobcan-mate # Corrected image name
+        images: ghcr.io/${{ github.repository_owner }}/jobcan-mate
         tags: |
-          type=sha
           type=raw,value=latest,enable={{is_default_branch}}
 
     - name: Build and push Docker image
@@ -40,5 +38,10 @@ jobs:
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
-        # Ensure config.json from the repo is used during build, not one from a ConfigMap
-        # The Dockerfile already copies the local config.json
+
+    - name: Delete untagged images
+      uses: Chizkiyahu/delete-untagged-ghcr-action@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        repository_owner: ${{ github.repository_owner }}
+        repository: jobcan-mate
