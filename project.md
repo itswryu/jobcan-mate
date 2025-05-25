@@ -264,5 +264,6 @@ TELEGRAM_CHAT_ID="your_telegram_chat_id"
   - [X] `main` 브랜치 푸시 시에만 트리거되도록 수정
   - [X] Docker 이미지 태그는 `latest`만 생성하도록 수정
   - [X] 태그 없는 이전 GHCR 이미지 삭제 단계 추가 (`Chizkiyahu/delete-untagged-ghcr-action` 사용)
+    - [X] `owner_type: user` 파라미터 추가하여 오류 수정
   - [X] `project.md` 작업 목록 업데이트
   - [X] GitHub Actions 워크플로우 수정 작업 커밋
