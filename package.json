@@ -22,6 +22,7 @@
     "jobcan-auto": "file:",
     "node-cron": "^4.0.7",
     "node-ical": "^0.20.1",
+    "node-telegram-bot-api": "^0.66.0",
     "playwright": "^1.52.0"
   }
 }
