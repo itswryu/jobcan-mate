@@ -60,6 +60,6 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         owner: ${{ github.repository_owner }}
-        name: ${{ github.event.repository.name }}
-        keep_tags_patterns: "latest"
-        keep_tags: 3
+        repository: ${{ github.event.repository.name }} # 'name'에서 'repository'로 변경
+        exclude-tags: "latest" # 'keep_tags_patterns' 대신 사용, 'latest' 태그 보호
+        keep-n-tagged: 3 # 'keep_tags' 대신 사용, 최신 태그 3개 유지
