@@ -12,6 +12,8 @@ COPY package*.json ./
 
 # Install app dependencies
 RUN npm install --omit=dev
+# Install Playwright browsers and their dependencies
+RUN npx playwright install --with-deps chromium
 # If you have a complex build step, you might use:
 # RUN npm ci --only=production
 
