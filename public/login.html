@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko"> <!-- Default language, will be updated by JS -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitleElement">로그인 - Jobcan Mate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+    <header class="header-bar">
+        <h1 id="headerTitleElement">Jobcan Mate</h1>
+        <div class="language-switcher">
+            <button id="langKoBtn">한국어</button>
+            <button id="langEnBtn">English</button>
+        </div>
+    </header>
+
+    <main class="login-container">
+        <div class="login-box">
+            <h2 id="loginHeadingElement">로그인</h2>
+            <p id="loginDescriptionElement">Jobcan 자동 출퇴근 서비스를 이용하려면 Google 계정으로 로그인하세요.</p>
+            <button id="googleLoginBtn" class="google-login-button">
+                <span id="googleLoginBtnTextElement">Google 계정으로 로그인</span>
+            </button>
+            <p class="admin-login-info">
+                <span id="adminLoginPromptElement">관리자이신가요?</span>
+                <a href="/admin/login.html" id="adminLoginLinkTextElement">관리자 로그인</a>
+            </p>
+        </div>
+    </main>
+
+    <script src="/js/login.js"></script>
+</body>
+</html>

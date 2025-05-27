@@ -1,0 +1,324 @@
+/* Basic Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Noto Sans', 'Noto Sans KR', sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f4f7f6;
+    color: #333;
+    line-height: 1.6;
+}
+
+.header-bar {
+    background-color: #000;
+    color: #fff;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* To space title and button */
+    padding: 0 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-bar h1 {
+    font-size: 1.5em;
+    font-weight: 500;
+}
+
+.header-button {
+    background-color: #dc3545; /* Red for logout */
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.header-button:hover {
+    background-color: #c82333; /* Darker red */
+}
+
+.settings-container {
+    flex-grow: 1;
+    padding: 20px;
+    max-width: 900px;
+    margin: 20px auto; /* Center the container */
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.tab-link {
+    padding: 10px 15px;
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    font-size: 1em;
+    color: #555;
+    transition: color 0.3s ease, border-bottom 0.3s ease, background-color 0.3s ease;
+    border-bottom: 2px solid transparent; /* Add transparent border for smooth transition */
+    position: relative; /* For ::after pseudo-element */
+    margin-right: 5px;
+    border-radius: 4px 4px 0 0; /* Rounded top corners */
+}
+
+.tab-link:hover {
+    background-color: #e9ecef; /* Light gray hover */
+    color: #0056b3;
+}
+
+.tab-link.active {
+    color: #007bff; /* Blue for active tab */
+    border-color: #007bff; /* Bottom border color */
+    font-weight: 700;
+    background-color: #fff; /* Match container background */
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.05); /* Subtle top shadow */
+}
+
+.tab-link.active::after { /* Optional: small triangle indicator */
+    content: '';
+    position: absolute;
+    bottom: -2px; /* Position it over the border */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    /* border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #007bff; */
+}
+
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.5s; /* Basic fade-in animation */
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.tab-content h3 {
+    margin-bottom: 15px;
+    font-size: 1.4em;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.tab-content div {
+    margin-bottom: 15px; /* Space between form groups */
+}
+
+label {
+    display: block;
+    margin-bottom: .3em;
+    font-weight: 500;
+    color: #444;
+}
+
+label.checkbox-label {
+    display: inline-block;
+    margin-left: 5px;
+    font-weight: normal;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="time"],
+input[type="number"],
+input[type="url"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: .75em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    background-color: white; /* Ensure select background is white */
+}
+
+input.invalid { /* Style for invalid inputs */
+    border-color: #dc3545 !important; /* Red border for invalid fields */
+    background-color: #fbe_ee; /* Light pink background */
+}
+input.invalid:focus {
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25); /* Red focus shadow */
+}
+
+
+input[type="checkbox"] {
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.help-text {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: -10px;
+    margin-bottom: 10px;
+}
+
+.help-text a {
+    color: #007bff;
+    text-decoration: none;
+}
+.help-text a:hover {
+    text-decoration: underline;
+}
+
+
+.test-button, .save-button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.test-button {
+    background-color: #6c757d; /* Gray */
+    color: white;
+    margin-right: 10px;
+}
+
+.test-button:hover {
+    background-color: #5a6268;
+}
+
+.save-button {
+    background-color: #28a745; /* Green */
+    color: white;
+    display: block; /* Make it full width */
+    width: 100%;
+    margin-top: 20px;
+}
+
+.save-button:hover {
+    background-color: #218838;
+}
+
+.loading-indicator {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    z-index: 1000;
+    font-size: 1.2em;
+    color: #007bff; /* Blue text */
+    border: 2px solid #007bff; /* Blue border */
+    padding: 20px; /* Smaller padding */
+    font-size: 1.1em;
+    display: flex; /* For aligning spinner and text */
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-indicator::before { /* Optional: Spinner */
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border: 3px solid rgba(0, 123, 255, 0.2);
+    border-radius: 50%;
+    border-top-color: #007bff;
+    animation: spin 1s ease-infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+
+.notification {
+    padding: 12px 20px; /* Adjusted padding */
+    margin: 0 auto 20px auto; /* Centered notification */
+    border-radius: 5px; /* Slightly more rounded */
+    color: white;
+    text-align: center;
+    font-size: 1em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    max-width: 80%; /* Prevent full width on larger screens */
+    opacity: 0; /* Start hidden for animation */
+    transform: translateY(-20px); /* Start above for animation */
+    animation: notificationFadeIn 0.5s ease-out forwards;
+    white-space: pre-line; /* Allow newlines from JS to render */
+}
+
+@keyframes notificationFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+.notification.success {
+    background-color: #28a745; /* Green */
+    border-left: 5px solid #1e7e34; /* Darker green accent */
+}
+
+.notification.error {
+    background-color: #dc3545; /* Red */
+    border-left: 5px solid #b02a37; /* Darker red accent */
+}
+
+.notification.info {
+    background-color: #17a2b8; /* Blue-ish */
+    border-left: 5px solid #117a8b; /* Darker blue accent */
+}
+
+/* Basic Responsiveness */
+@media (max-width: 600px) {
+    .settings-container {
+        margin: 10px;
+        padding: 15px;
+    }
+
+    .tabs {
+        flex-direction: column;
+    }
+
+    .tab-link {
+        border-bottom: 1px solid #eee;
+    }
+    .tab-link.active {
+        border-bottom: 2px solid #007bff;
+    }
+
+    .header-bar h1 {
+        font-size: 1.2em;
+    }
+    .header-button {
+        padding: 6px 10px;
+        font-size: 0.8em;
+    }
+}

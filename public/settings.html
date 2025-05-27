@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content=""> <!-- Will be populated by JS -->
+    <title>설정 - Jobcan Mate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/settings.css">
+</head>
+<body>
+    <header class="header-bar">
+        <h1>Jobcan Mate 설정</h1>
+        <button id="logoutBtn" class="header-button">로그아웃</button>
+    </header>
+
+    <main class="settings-container">
+        <div id="loadingIndicator" class="loading-indicator" style="display: none;">로딩 중...</div>
+        <div id="notificationArea" class="notification" style="display: none;"></div>
+
+        <div class="tabs">
+            <button class="tab-link active" data-tab="jobcanTab">Jobcan 연동</button>
+            <button class="tab-link" data-tab="telegramTab">Telegram 연동</button>
+            <button class="tab-link" data-tab="scheduleTab">출퇴근 시간</button>
+            <button class="tab-link" data-tab="calendarTab">연차 캘린더</button>
+            <button class="tab-link" data-tab="generalTab">일반 설정</button>
+        </div>
+
+        <form id="settingsForm">
+            <!-- Jobcan 연동 Tab -->
+            <div id="jobcanTab" class="tab-content active">
+                <h3>Jobcan 연동 설정</h3>
+                <div>
+                    <label for="jobcanUsername">Jobcan 아이디 (이메일)</label>
+                    <input type="text" id="jobcanUsername" name="jobcanUsername" placeholder="Jobcan 로그인 이메일">
+                </div>
+                <div>
+                    <label for="jobcanPassword">Jobcan 비밀번호</label>
+                    <input type="password" id="jobcanPassword" name="jobcanPassword" placeholder="변경시에만 입력">
+                </div>
+                <div>
+                    <label for="jobcanClerkCode">Jobcan ADIT (타각) 코드</label>
+                    <input type="text" id="jobcanClerkCode" name="jobcanClerkCode" placeholder="선택 사항">
+                </div>
+                <button type="button" id="testJobcanBtn" class="test-button">Jobcan 연결 테스트</button>
+            </div>
+
+            <!-- Telegram 연동 Tab -->
+            <div id="telegramTab" class="tab-content">
+                <h3>Telegram 알림 설정</h3>
+                <div>
+                    <label for="telegramChatId">Telegram Chat ID</label>
+                    <input type="text" id="telegramChatId" name="telegramChatId" placeholder="Telegram 사용자 Chat ID">
+                </div>
+                <div>
+                    <label for="telegramBotToken">Telegram Bot Token</label>
+                    <input type="password" id="telegramBotToken" name="telegramBotToken" placeholder="변경시에만 입력">
+                </div>
+                 <p class="help-text">Chat ID는 <a href="https://t.me/userinfobot" target="_blank">@userinfobot</a> 에게 /start 를 보내서 확인 가능합니다.</p>
+                <button type="button" id="testTelegramBtn" class="test-button">Telegram 연결 테스트</button>
+            </div>
+
+            <!-- 출퇴근 시간 Tab -->
+            <div id="scheduleTab" class="tab-content">
+                <h3>자동 출퇴근 시간 설정</h3>
+                <div>
+                    <label for="workStartTime">출근 시간</label>
+                    <input type="time" id="workStartTime" name="workStartTime">
+                </div>
+                <div>
+                    <label for="workEndTime">퇴근 시간</label>
+                    <input type="time" id="workEndTime" name="workEndTime">
+                </div>
+                <div>
+                    <label for="checkinDelayMinutes">출근 타각 지연 (분)</label>
+                    <input type="number" id="checkinDelayMinutes" name="checkinDelayMinutes" min="0" placeholder="예: 0-10 (랜덤 지연)">
+                </div>
+                <div>
+                    <label for="checkoutDelayMinutes">퇴근 타각 지연 (분)</label>
+                    <input type="number" id="checkoutDelayMinutes" name="checkoutDelayMinutes" min="0" placeholder="예: 0-10 (랜덤 지연)">
+                </div>
+            </div>
+
+            <!-- 연차 캘린더 Tab -->
+            <div id="calendarTab" class="tab-content">
+                <h3>연차 캘린더 연동 (ICS)</h3>
+                <div>
+                    <label for="calendarUrl">ICS 캘린더 URL</label>
+                    <input type="url" id="calendarUrl" name="calendarUrl" placeholder="https://example.com/calendar.ics">
+                </div>
+                <div>
+                    <input type="checkbox" id="isCalendarEnabled" name="isCalendarEnabled" value="true">
+                    <label for="isCalendarEnabled" class="checkbox-label">캘린더 연동 활성화 (연차/공휴일 자동 스킵)</label>
+                </div>
+            </div>
+            
+            <!-- 일반 설정 Tab -->
+            <div id="generalTab" class="tab-content">
+                <h3>일반 설정</h3>
+                <div>
+                    <input type="checkbox" id="isTestMode" name="isTestMode" value="true">
+                    <label for="isTestMode" class="checkbox-label">테스트 모드 (실제 타각 안함)</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="isNotificationsEnabled" name="isNotificationsEnabled" value="true">
+                    <label for="isNotificationsEnabled" class="checkbox-label">기본 알림 활성화 (Telegram)</label>
+                </div>
+                 <div>
+                    <input type="checkbox" id="isAutoScheduleEnabled" name="isAutoScheduleEnabled" value="true">
+                    <label for="isAutoScheduleEnabled" class="checkbox-label">자동 출퇴근 스케줄링 활성화</label>
+                </div>
+                <div>
+                    <label for="timezone">시간대 설정</label>
+                    <select id="timezone" name="timezone">
+                        <option value="Asia/Seoul">Asia/Seoul (KST)</option>
+                        <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+                        <option value="America/New_York">America/New_York (EST)</option>
+                        <option value="Europe/London">Europe/London (GMT/BST)</option>
+                        <option value="UTC">UTC</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" id="saveSettingsBtn" class="save-button">설정 저장</button>
+        </form>
+    </main>
+
+    <script src="/js/settings.js"></script>
+</body>
+</html>

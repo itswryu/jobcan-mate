@@ -1,0 +1,32 @@
+{
+  "ko": {
+    "jobcanCheckInSuccess": "✅ 출근 처리가 완료되었습니다. (시간: {{time}})",
+    "jobcanCheckOutSuccess": "✅ 퇴근 처리가 완료되었습니다. (시간: {{time}})",
+    "jobcanActionError": "❌ Jobcan 처리 중 오류가 발생했습니다: {{errorMessage}} (사용자: {{username}})",
+    "genericError": "❌ 일반 오류 발생: {{errorMessage}}",
+    "leaveTomorrow": "📅 내일은 연차/휴일 예정일입니다. 자동 출퇴근이 실행되지 않습니다.",
+    "testNotification": "🎉 Telegram 알림 테스트 성공! (사용자: {{username}})",
+    "jobcanTaskScheduled": "⏰ Jobcan {{taskType}} 작업이 {{time}}에 예약되었습니다. (사용자: {{username}})",
+    "jobcanTaskCancelled": "🚫 Jobcan {{taskType}} 작업 예약이 취소되었습니다. (사용자: {{username}})",
+    "jobcanTaskSkippedLeave": "🏖️ 오늘은 연차/휴일이므로 Jobcan {{taskType}} 작업이 실행되지 않았습니다. (사용자: {{username}})",
+    "jobcanTestSuccess": "👍 Jobcan 연결 테스트 성공! (사용자: {{username}})",
+    "jobcanTestFailure": "👎 Jobcan 연결 테스트 실패: {{errorMessage}} (사용자: {{username}})",
+    "onLeaveSkippedCheckIn": "🏖️ 오늘은 연차/휴일이므로 자동 출근이 실행되지 않았습니다. (날짜: {{date}}, 사용자: {{username}})",
+    "onLeaveSkippedCheckOut": "🏖️ 오늘은 연차/휴일이므로 자동 퇴근이 실행되지 않았습니다. (날짜: {{date}}, 사용자: {{username}})"
+  },
+  "en": {
+    "jobcanCheckInSuccess": "✅ Check-in successful. (Time: {{time}})",
+    "jobcanCheckOutSuccess": "✅ Check-out successful. (Time: {{time}})",
+    "jobcanActionError": "❌ Error during Jobcan action: {{errorMessage}} (User: {{username}})",
+    "genericError": "❌ A general error occurred: {{errorMessage}}",
+    "leaveTomorrow": "📅 Tomorrow is a scheduled day off. Automated clock-in/out will be skipped.",
+    "testNotification": "🎉 Telegram notification test successful! (User: {{username}})",
+    "jobcanTaskScheduled": "⏰ Jobcan {{taskType}} task has been scheduled for {{time}}. (User: {{username}})",
+    "jobcanTaskCancelled": "🚫 Jobcan {{taskType}} task schedule has been cancelled. (User: {{username}})",
+    "jobcanTaskSkippedLeave": "🏖️ Today is a scheduled day off, so Jobcan {{taskType}} task was not executed. (User: {{username}})",
+    "jobcanTestSuccess": "👍 Jobcan connection test successful! (User: {{username}})",
+    "jobcanTestFailure": "👎 Jobcan connection test failed: {{errorMessage}} (User: {{username}})",
+    "onLeaveSkippedCheckIn": "🏖️ Automated check-in was skipped today due to scheduled leave. (Date: {{date}}, User: {{username}})",
+    "onLeaveSkippedCheckOut": "🏖️ Automated check-out was skipped today due to scheduled leave. (Date: {{date}}, User: {{username}})"
+  }
+}

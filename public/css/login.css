@@ -1,0 +1,126 @@
+/* Basic Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Noto Sans', 'Noto Sans KR', sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: #f4f7f6; /* Light grayish-blue */
+    color: #333; /* Dark gray for text */
+    line-height: 1.6;
+}
+
+.header-bar {
+    background-color: #000; /* Black */
+    color: #fff; /* White text */
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-bar h1 {
+    font-size: 1.5em;
+    font-weight: 500; /* Noto Sans KR medium weight */
+}
+
+.login-container {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.login-box {
+    background-color: #fff; /* White */
+    padding: 30px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    animation: slideUp 0.7s ease-out forwards; /* Added animation */
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+@keyframes slideUp { /* Added keyframes */
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-box h2 {
+    margin-bottom: 15px;
+    font-size: 1.8em;
+    font-weight: 700; /* Noto Sans KR bold weight */
+    color: #222;
+}
+
+.login-box p {
+    margin-bottom: 25px;
+    font-size: 1em;
+    color: #555;
+}
+
+.google-login-button {
+    background-color: #4285F4; /* Google Blue */
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1em;
+    font-weight: 500; /* Noto Sans medium weight */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none; /* In case it's an <a> tag styled as a button */
+    display: inline-block; /* For proper padding and centering */
+    width: 100%; /* Make button full width of login box */
+}
+
+.google-login-button:hover {
+    background-color: #357ae8; /* Darker Google Blue */
+}
+
+.admin-login-info {
+    margin-top: 20px;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.admin-login-info a {
+    color: #007bff; /* Standard link blue */
+    text-decoration: none;
+}
+
+.admin-login-info a:hover {
+    text-decoration: underline;
+}
+
+/* Basic Responsiveness */
+@media (max-width: 480px) {
+    .login-box {
+        padding: 20px 25px;
+    }
+
+    .login-box h2 {
+        font-size: 1.6em;
+    }
+
+    .login-box p {
+        font-size: 0.95em;
+    }
+
+    .google-login-button {
+        padding: 10px 15px;
+        font-size: 0.95em;
+    }
+}
